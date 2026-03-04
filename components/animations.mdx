@@ -1,0 +1,473 @@
+---
+title: Animated Components
+description: Motion-powered components using Framer Motion for interactive animations and effects.
+---
+
+The Tony Santana Portfolio includes animated components built with **Motion** (formerly Framer Motion) to create engaging, interactive user experiences.
+
+## Motion Library
+
+All animated components use the `motion/react` library, which provides:
+
+- Declarative animations with variants
+- Spring physics and easing functions
+- Gesture support (hover, tap, drag)
+- Layout animations
+- Performance-optimized animations
+
+### Basic Motion Usage
+
+```tsx
+import { m } from "motion/react"
+
+<m.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  Animated content
+</m.div>
+```
+
+## Animated Icons
+
+Interactive icon components with hover animations.
+
+### MoonIcon
+
+Animated moon icon for dark mode toggle. Located at `src/components/animated-icons/moon.tsx:33`.
+
+```tsx
+import { MoonIcon } from "@/components/animated-icons/moon"
+
+<MoonIcon size={24} />
+```
+
+#### Features
+
+- Rotation animation on hover
+- Smooth easing transitions
+- Controllable via ref
+- Accessible with ARIA labels
+
+#### Advanced Usage with Ref
+
+```tsx
+import { useRef } from "react"
+import { MoonIcon, type MoonIconHandle } from "@/components/animated-icons/moon"
+
+function ThemeToggle() {
+  const iconRef = useRef<MoonIconHandle>(null)
+
+  const handleClick = () => {
+    iconRef.current?.startAnimation()
+    // Toggle theme logic
+  }
+
+  return (
+    <button onClick={handleClick}>
+      <MoonIcon ref={iconRef} size={20} />
+    </button>
+  )
+}
+```
+
+### SunMediumIcon
+
+Animated sun icon for light mode toggle. Located at `src/components/animated-icons/sun-medium.tsx:27`.
+
+```tsx
+import { SunMediumIcon } from "@/components/animated-icons/sun-medium"
+
+<SunMediumIcon size={24} />
+```
+
+#### Animation Details
+
+- Rays appear sequentially with staggered delay
+- Each ray has a 0.1s delay offset
+- Smooth opacity transitions
+- Controllable animation lifecycle
+
+#### Props & Methods
+
+```typescript
+interface SunMediumIconProps {
+  size?: number
+  className?: string
+  // ...standard HTMLDivElement props
+}
+
+interface SunMediumIconHandle {
+  startAnimation: () => void
+  stopAnimation: () => void
+}
+```
+
+### ChevronsDownUpIcon
+
+Animated chevron icon for expand/collapse actions. Located at `src/components/animated-icons/chevrons-down-up-icon.tsx:14`.
+
+```tsx
+import { ChevronsDownUpIcon } from "@/components/animated-icons/chevrons-down-up-icon"
+
+<ChevronsDownUpIcon />
+```
+
+#### Animation Behavior
+
+- Morphs between down and up states
+- 300ms transition duration
+- Controlled via ref methods
+- SVG path interpolation
+
+#### Implementation Example
+
+```tsx
+import { useRef, useState } from "react"
+import {
+  ChevronsDownUpIcon,
+  type ChevronsDownUpIconHandle,
+} from "@/components/animated-icons/chevrons-down-up-icon"
+
+function CollapsibleSection() {
+  const iconRef = useRef<ChevronsDownUpIconHandle>(null)
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const toggle = () => {
+    if (isExpanded) {
+      iconRef.current?.stopAnimation()
+    } else {
+      iconRef.current?.startAnimation()
+    }
+    setIsExpanded(!isExpanded)
+  }
+
+  return (
+    <button onClick={toggle}>
+      <ChevronsDownUpIcon ref={iconRef} />
+    </button>
+  )
+}
+```
+
+## Animation Patterns
+
+### Variants Pattern
+
+Define animation states using variants:
+
+```tsx
+import { m } from "motion/react"
+
+const iconVariants = {
+  normal: { rotate: 0 },
+  animate: { rotate: [0, -10, 10, -5, 5, 0] },
+}
+
+<m.div
+  variants={iconVariants}
+  initial="normal"
+  animate="animate"
+  transition={{ duration: 1.2, ease: "easeInOut" }}
+>
+  Content
+</m.div>
+```
+
+### Custom Animation Controls
+
+Use `useAnimation` for programmatic control:
+
+```tsx
+import { m, useAnimation } from "motion/react"
+import { useCallback } from "react"
+
+function AnimatedComponent() {
+  const controls = useAnimation()
+
+  const handleHover = useCallback(() => {
+    controls.start("animate")
+  }, [controls])
+
+  const handleLeave = useCallback(() => {
+    controls.start("normal")
+  }, [controls])
+
+  return (
+    <m.div
+      animate={controls}
+      onMouseEnter={handleHover}
+      onMouseLeave={handleLeave}
+    >
+      Hover me
+    </m.div>
+  )
+}
+```
+
+### Staggered Children
+
+Animate multiple elements with delay:
+
+```tsx
+import { m } from "motion/react"
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+}
+
+<m.ul variants={containerVariants} initial="hidden" animate="visible">
+  {items.map((item) => (
+    <m.li key={item.id} variants={itemVariants}>
+      {item.name}
+    </m.li>
+  ))}
+</m.ul>
+```
+
+## Animation Best Practices
+
+### Performance Optimization
+
+<Accordion title="Use transform and opacity">
+  Stick to animating `transform` and `opacity` properties for the best performance:
+
+  ```tsx
+  // Good - GPU accelerated
+  <m.div
+    animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+  />
+
+  // Avoid - triggers layout recalculation
+  <m.div
+    animate={{ width: "100%", height: 200 }}
+  />
+  ```
+</Accordion>
+
+<Accordion title="Reduce motion for accessibility">
+  Respect user preferences for reduced motion:
+
+  ```tsx
+  import { m, useReducedMotion } from "motion/react"
+
+  function AnimatedComponent() {
+    const shouldReduceMotion = useReducedMotion()
+
+    return (
+      <m.div
+        animate={{ x: shouldReduceMotion ? 0 : 100 }}
+        transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
+      >
+        Content
+      </m.div>
+    )
+  }
+  ```
+</Accordion>
+
+<Accordion title="Use will-change sparingly">
+  Only add `will-change` when necessary:
+
+  ```tsx
+  <m.div
+    style={{ willChange: "transform" }}
+    animate={{ x: 100 }}
+  />
+  ```
+
+  Motion handles this automatically in most cases.
+</Accordion>
+
+### Transition Configuration
+
+Choose appropriate easing functions:
+
+<Tabs>
+  <Tab title="Spring Physics">
+    ```tsx
+    <m.div
+      animate={{ scale: 1 }}
+      transition={{
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+      }}
+    />
+    ```
+  </Tab>
+  <Tab title="Easing Curves">
+    ```tsx
+    <m.div
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 0.3,
+        ease: "easeInOut",
+      }}
+    />
+    ```
+  </Tab>
+  <Tab title="Custom Curves">
+    ```tsx
+    <m.div
+      animate={{ y: 0 }}
+      transition={{
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1], // Cubic bezier
+      }}
+    />
+    ```
+  </Tab>
+</Tabs>
+
+### Common Animation Recipes
+
+<CodeGroup>
+```tsx Fade In
+import { m } from "motion/react"
+
+<m.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 0.5 }}
+>
+  Content
+</m.div>
+```
+
+```tsx Slide In from Bottom
+import { m } from "motion/react"
+
+<m.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6 }}
+>
+  Content
+</m.div>
+```
+
+```tsx Scale In
+import { m } from "motion/react"
+
+<m.div
+  initial={{ opacity: 0, scale: 0.8 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.4 }}
+>
+  Content
+</m.div>
+```
+
+```tsx Rotate and Fade
+import { m } from "motion/react"
+
+<m.div
+  initial={{ opacity: 0, rotate: -10 }}
+  animate={{ opacity: 1, rotate: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  Content
+</m.div>
+```
+</CodeGroup>
+
+## Creating Custom Animated Components
+
+Follow this pattern to create reusable animated components:
+
+```tsx
+import { forwardRef, useImperativeHandle } from "react"
+import { m, useAnimation, type Variants } from "motion/react"
+
+export interface MyIconHandle {
+  startAnimation: () => void
+  stopAnimation: () => void
+}
+
+interface MyIconProps {
+  size?: number
+  className?: string
+}
+
+const iconVariants: Variants = {
+  normal: { scale: 1 },
+  animate: { scale: [1, 1.2, 1] },
+}
+
+export const MyIcon = forwardRef<MyIconHandle, MyIconProps>(
+  ({ size = 24, className }, ref) => {
+    const controls = useAnimation()
+
+    useImperativeHandle(ref, () => ({
+      startAnimation: () => controls.start("animate"),
+      stopAnimation: () => controls.start("normal"),
+    }))
+
+    return (
+      <m.div
+        className={className}
+        variants={iconVariants}
+        animate={controls}
+        transition={{ duration: 0.6 }}
+      >
+        {/* Icon content */}
+      </m.div>
+    )
+  }
+)
+
+MyIcon.displayName = "MyIcon"
+```
+
+## Integration with UI Components
+
+Combine animations with UI components:
+
+```tsx
+import { m } from "motion/react"
+import { Button } from "@/components/ui/button"
+import { MoonIcon } from "@/components/animated-icons/moon"
+
+<Button
+  asChild
+  variant="ghost"
+  size="icon"
+>
+  <m.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+  >
+    <MoonIcon size={20} />
+  </m.button>
+</Button>
+```
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="Motion Documentation" icon="book" href="https://motion.dev">
+    Official Motion (Framer Motion) documentation
+  </Card>
+  <Card title="Animation Examples" icon="sparkles" href="https://motion.dev/examples">
+    Browse interactive animation examples
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<Card title="Back to UI Components" icon="cube" href="/components/ui-components">
+  Learn about the core UI component library
+</Card>

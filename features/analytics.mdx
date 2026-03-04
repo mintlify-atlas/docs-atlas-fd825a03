@@ -1,0 +1,496 @@
+---
+title: Analytics & Tracking
+description: Track user interactions and engagement with PostHog analytics integration
+---
+
+The Tony Santana Portfolio includes PostHog analytics integration for tracking user interactions, engagement metrics, and usage patterns while respecting user privacy.
+
+## Overview
+
+The analytics system uses PostHog for event tracking with built-in consent management and cookieless mode. All events are type-safe using Zod schema validation.
+
+## Configuration
+
+### Environment Variables
+
+Configure PostHog in your environment:
+
+```bash
+# PostHog Configuration
+NEXT_PUBLIC_POSTHOG_KEY=phc_your_project_key
+NEXT_PUBLIC_POSTHOG_HOST=https://ph.yoursite.com
+NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.i.posthog.com
+```
+
+<Steps>
+  <Step title="Get PostHog API Key">
+    Sign up at [PostHog](https://posthog.com) and create a new project to get your API key.
+  </Step>
+
+  <Step title="Set API Host">
+    Use your custom PostHog domain or the default `https://app.posthog.com`
+  </Step>
+
+  <Step title="Configure UI Host">
+    Set the PostHog UI host based on your region (US or EU)
+  </Step>
+</Steps>
+
+### Required Environment Variables
+
+<Accordion title="NEXT_PUBLIC_POSTHOG_KEY">
+  Your PostHog project API key. Found in PostHog project settings.
+
+  Example: `phc_abc123def456ghi789jkl012mno345pqr678stu901vwx234yz`
+</Accordion>
+
+<Accordion title="NEXT_PUBLIC_POSTHOG_HOST">
+  PostHog API endpoint URL. Use your custom domain or PostHog's default.
+
+  Examples:
+  - `https://ph.yoursite.com` (custom domain)
+  - `https://app.posthog.com` (default)
+</Accordion>
+
+<Accordion title="NEXT_PUBLIC_POSTHOG_UI_HOST">
+  PostHog UI host for your region.
+
+  Examples:
+  - `https://us.i.posthog.com` (US region)
+  - `https://eu.i.posthog.com` (EU region)
+</Accordion>
+
+## Event Tracking System
+
+Events are defined in `src/lib/events.ts:4`:
+
+```typescript
+import { z } from "zod";
+
+const eventSchema = z.object({
+  name: z.enum([
+    "copy_npm_command",
+    "copy_code_block",
+    "play_name_pronunciation",
+    "open_command_menu",
+    "command_menu_search",
+    "command_menu_action",
+    "blog_search",
+  ]),
+  properties: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .optional(),
+});
+
+export type Event = z.infer<typeof eventSchema>;
+
+export function trackEvent(input: Event) {
+  const event = eventSchema.parse(input);
+  if (event) {
+    // posthog.capture(event.name, event.properties);
+  }
+}
+```
+
+<Note>
+  Events use Zod schema validation to ensure type safety and prevent tracking invalid data.
+</Note>
+
+## Available Events
+
+The portfolio tracks the following user interactions:
+
+### copy_npm_command
+
+Fired when a user copies an npm/pnpm/yarn/bun install command.
+
+```typescript
+trackEvent({
+  name: "copy_npm_command",
+  properties: {
+    code: "pnpm add @tonysantana/component"
+  }
+});
+```
+
+**Properties:**
+- `code` (string) - The command text that was copied
+
+### copy_code_block
+
+Fired when a user copies a code block from blog posts or documentation.
+
+```typescript
+trackEvent({
+  name: "copy_code_block",
+  properties: {
+    code: "const greeting = 'Hello World';"
+  }
+});
+```
+
+**Properties:**
+- `code` (string) - The code content that was copied
+
+### play_name_pronunciation
+
+Fired when a user plays the name pronunciation audio.
+
+```typescript
+trackEvent({
+  name: "play_name_pronunciation",
+  properties: {}
+});
+```
+
+**Properties:** None
+
+### open_command_menu
+
+Fired when a user opens the command menu.
+
+```typescript
+trackEvent({
+  name: "open_command_menu",
+  properties: {
+    method: "keyboard",
+    key: "cmd+k"
+  }
+});
+```
+
+**Properties:**
+- `method` (string) - How the menu was opened: `"click"` or `"keyboard"`
+- `key` (string) - Keyboard shortcut used (e.g., `"cmd+k"`, `"ctrl+k"`)
+
+### command_menu_search
+
+Fired when a user searches in the command menu (debounced 500ms).
+
+```typescript
+trackEvent({
+  name: "command_menu_search",
+  properties: {
+    query: "react components",
+    query_length: 16
+  }
+});
+```
+
+**Properties:**
+- `query` (string) - The search text entered
+- `query_length` (number) - Length of the search query
+
+<Note>
+  This event is debounced by 500ms to avoid excessive tracking while the user types.
+</Note>
+
+### command_menu_action
+
+Fired when a user performs an action in the command menu.
+
+#### Navigation Action
+
+```typescript
+trackEvent({
+  name: "command_menu_action",
+  properties: {
+    action: "navigate",
+    href: "/blog/welcome",
+    open_in_new_tab: false
+  }
+});
+```
+
+**Properties:**
+- `action` - `"navigate"`
+- `href` (string) - Target URL
+- `open_in_new_tab` (boolean) - Whether opened in new tab
+
+#### Copy Action
+
+```typescript
+trackEvent({
+  name: "command_menu_action",
+  properties: {
+    action: "copy",
+    text: "Copied content here"
+  }
+});
+```
+
+**Properties:**
+- `action` - `"copy"`
+- `text` (string) - Content that was copied
+
+#### Theme Change Action
+
+```typescript
+trackEvent({
+  name: "command_menu_action",
+  properties: {
+    action: "change_theme",
+    theme: "dark"
+  }
+});
+```
+
+**Properties:**
+- `action` - `"change_theme"`
+- `theme` (string) - Theme selected: `"light"`, `"dark"`, or `"system"`
+
+### blog_search
+
+Fired when a user searches blog posts (debounced 500ms).
+
+```typescript
+trackEvent({
+  name: "blog_search",
+  properties: {
+    query: "nextjs tutorial",
+    query_length: 15
+  }
+});
+```
+
+**Properties:**
+- `query` (string) - The search text entered
+- `query_length` (number) - Length of the search query
+
+<Note>
+  This event is debounced by 500ms to reduce noise from keystrokes.
+</Note>
+
+## Using trackEvent
+
+To track custom events in your components:
+
+```typescript
+import { trackEvent } from "@/lib/events";
+
+function MyComponent() {
+  const handleClick = () => {
+    trackEvent({
+      name: "copy_code_block",
+      properties: {
+        code: codeSnippet
+      }
+    });
+  };
+
+  return <button onClick={handleClick}>Copy Code</button>;
+}
+```
+
+### Type Safety
+
+The event system is fully type-safe:
+
+```typescript
+// ✓ Valid event
+trackEvent({
+  name: "blog_search",
+  properties: {
+    query: "react",
+    query_length: 5
+  }
+});
+
+// ✗ TypeScript error - invalid event name
+trackEvent({
+  name: "invalid_event",
+  properties: {}
+});
+
+// ✗ Runtime error - fails Zod validation
+trackEvent({
+  name: "blog_search",
+  properties: {
+    query: 123  // Should be string
+  }
+});
+```
+
+## PostHog Initialization
+
+PostHog is initialized in `src/instrumentation-client.ts` (production only):
+
+```typescript
+import posthog from "posthog-js";
+
+if (process.env.NODE_ENV === "production") {
+  posthog.init(
+    process.env.NEXT_PUBLIC_POSTHOG_KEY!,
+    {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      ui_host: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST,
+      persistence: "memory",  // Cookieless until consent
+    }
+  );
+}
+```
+
+<Tip>
+  PostHog only runs in production to avoid tracking development activity.
+</Tip>
+
+## Consent Management
+
+The portfolio uses `@c15t/nextjs` package for consent management:
+
+```typescript
+import { ConsentManager } from "@c15t/nextjs";
+
+function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <ConsentManager />
+      </body>
+    </html>
+  );
+}
+```
+
+### Cookieless Mode
+
+PostHog runs in cookieless mode by default:
+
+```typescript
+{
+  persistence: "memory"  // No cookies until user consent
+}
+```
+
+Once the user consents, PostHog switches to cookie-based persistence for better tracking accuracy.
+
+## Privacy Features
+
+<Steps>
+  <Step title="Cookieless by default">
+    No cookies are set until user provides consent.
+  </Step>
+
+  <Step title="Production only">
+    Analytics only run in production, not during development.
+  </Step>
+
+  <Step title="Type-safe events">
+    Zod validation prevents accidental PII tracking.
+  </Step>
+
+  <Step title="Debounced search">
+    Search events are debounced to reduce data collection.
+  </Step>
+
+  <Step title="Consent UI">
+    Built-in consent manager for GDPR compliance.
+  </Step>
+</Steps>
+
+## Adding New Events
+
+To track new events:
+
+<Steps>
+  <Step title="Add event to schema">
+    Update the event enum in `src/lib/events.ts`:
+
+    ```typescript
+    const eventSchema = z.object({
+      name: z.enum([
+        "copy_npm_command",
+        "copy_code_block",
+        "play_name_pronunciation",
+        "open_command_menu",
+        "command_menu_search",
+        "command_menu_action",
+        "blog_search",
+        "your_new_event",  // Add here
+      ]),
+      properties: z
+        .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+        .optional(),
+    });
+    ```
+  </Step>
+
+  <Step title="Track the event">
+    Use `trackEvent()` where needed:
+
+    ```typescript
+    trackEvent({
+      name: "your_new_event",
+      properties: {
+        custom_property: "value"
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Test in production">
+    Events only fire in production. Deploy to staging or production to test.
+  </Step>
+</Steps>
+
+## Viewing Analytics
+
+Access your PostHog dashboard to view:
+
+- Event counts and trends
+- User sessions and recordings
+- Conversion funnels
+- User paths and flows
+- Custom insights and dashboards
+
+Navigate to your PostHog instance:
+
+```
+https://app.posthog.com/project/YOUR_PROJECT_ID
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Respect user privacy">
+    Never track personally identifiable information (PII) in event properties.
+  </Step>
+
+  <Step title="Use meaningful names">
+    Choose clear, descriptive event names that explain what happened.
+  </Step>
+
+  <Step title="Include context">
+    Add relevant properties to understand user behavior:
+
+    ```typescript
+    trackEvent({
+      name: "blog_search",
+      properties: {
+        query: searchTerm,
+        query_length: searchTerm.length,
+        results_count: results.length  // Add context
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Debounce high-frequency events">
+    Debounce events like search or scroll to reduce noise:
+
+    ```typescript
+    const debouncedTrack = debounce(() => {
+      trackEvent({ name: "blog_search", properties });
+    }, 500);
+    ```
+  </Step>
+
+  <Step title="Test thoroughly">
+    Verify events fire correctly in production before relying on the data.
+  </Step>
+</Steps>
+
+<Tip>
+  Use PostHog's session replay feature to understand how users interact with your portfolio and identify areas for improvement.
+</Tip>

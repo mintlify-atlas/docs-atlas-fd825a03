@@ -1,0 +1,429 @@
+---
+title: UI Components
+description: Core UI components built with Radix UI and styled with Tailwind CSS v4.
+---
+
+The Tony Santana Portfolio includes a comprehensive set of UI components based on shadcn/ui, built with Radix UI primitives and styled with Tailwind CSS v4.
+
+## Button
+
+A versatile button component with multiple variants and sizes. Located at `src/components/ui/button.tsx:45`.
+
+### Usage
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+<Button variant="default" size="default">
+  Click me
+</Button>
+```
+
+### Variants
+
+<Tabs>
+  <Tab title="Visual Styles">
+    - `default` - Primary button with gradient background
+    - `secondary` - Secondary styling with muted colors
+    - `destructive` - Red destructive actions
+    - `outline` - Bordered transparent background
+    - `ghost` - No background, hover effect only
+    - `link` - Underlined link styling
+  </Tab>
+  <Tab title="Sizes">
+    - `default` - Standard height (h-8)
+    - `sm` - Small size (h-7)
+    - `lg` - Large size (h-10)
+    - `icon` - Square icon button (size-8)
+    - `icon:sm` - Small icon button (size-7)
+    - `icon:lg` - Large icon button (size-10)
+  </Tab>
+</Tabs>
+
+### Props
+
+```typescript
+type ButtonProps = React.ComponentProps<"button"> & {
+  variant?: "default" | "secondary" | "destructive" | "outline" | "ghost" | "link"
+  size?: "default" | "sm" | "lg" | "icon" | "icon:sm" | "icon:lg"
+  asChild?: boolean
+}
+```
+
+### Advanced Usage
+
+The `asChild` prop allows you to render the button as any element:
+
+```tsx
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+<Button asChild variant="outline">
+  <Link href="/about">About</Link>
+</Button>
+```
+
+## Input
+
+Form input component with focus states and validation styling. Located at `src/components/ui/input.tsx:5`.
+
+### Usage
+
+```tsx
+import { Input } from "@/components/ui/input"
+
+<Input
+  type="text"
+  placeholder="Enter your name"
+  aria-invalid={hasError}
+/>
+```
+
+### Features
+
+- Focus ring with smooth transitions
+- Error state styling with `aria-invalid`
+- File input styling
+- Dark mode support
+- Disabled state handling
+
+## Dialog
+
+Modal dialog component built on Radix Dialog primitive. Located at `src/components/ui/dialog.tsx:9`.
+
+### Usage
+
+```tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>Open Dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Dialog Title</DialogTitle>
+      <DialogDescription>
+        This is a description of the dialog content.
+      </DialogDescription>
+    </DialogHeader>
+    <p>Dialog content goes here.</p>
+  </DialogContent>
+</Dialog>
+```
+
+### Features
+
+- Accessible modal with proper ARIA attributes
+- Backdrop overlay with blur effect
+- Close button (can be hidden with `showCloseButton={false}`)
+- Smooth open/close animations
+- Escape key and outside click to close
+
+## Tooltip
+
+Tooltip component with arrow and customizable delay. Located at `src/components/ui/tooltip.tsx:8`.
+
+### Usage
+
+```tsx
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+
+<Tooltip>
+  <TooltipTrigger asChild>
+    <Button variant="ghost" size="icon">
+      <InfoIcon />
+    </Button>
+  </TooltipTrigger>
+  <TooltipContent>
+    <p>Helpful information</p>
+  </TooltipContent>
+</Tooltip>
+```
+
+### Simple Tooltip
+
+For basic use cases, use the `SimpleTooltip` wrapper:
+
+```tsx
+import { SimpleTooltip } from "@/components/ui/tooltip"
+
+<SimpleTooltip content="Click to copy">
+  <Button>Copy</Button>
+</SimpleTooltip>
+```
+
+## Tabs
+
+Tabbed interface component with keyboard navigation. Located at `src/components/ui/tabs.tsx:9`.
+
+### Usage
+
+```tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+<Tabs defaultValue="overview">
+  <TabsList>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="details">Details</TabsTrigger>
+  </TabsList>
+  <TabsContent value="overview">
+    <p>Overview content</p>
+  </TabsContent>
+  <TabsContent value="details">
+    <p>Details content</p>
+  </TabsContent>
+</Tabs>
+```
+
+### Features
+
+- Keyboard navigation (arrow keys, Home, End)
+- Active state styling
+- Accessible with proper ARIA attributes
+- Dark mode support
+
+## Panel
+
+Section container with header and content areas. Located at `src/components/ui/panel.tsx:9`.
+
+### Usage
+
+```tsx
+import { Panel, PanelContent, PanelHeader, PanelTitle } from "@/components/ui/panel"
+
+<Panel>
+  <PanelHeader>
+    <PanelTitle>Panel Title</PanelTitle>
+  </PanelHeader>
+  <PanelContent>
+    <p>Your content here</p>
+  </PanelContent>
+</Panel>
+```
+
+### Styling
+
+- Bordered container with screen-width lines
+- Separated header section
+- Consistent padding
+- Dark mode border colors
+
+## Tag
+
+Small badge-like tag component for labels. Located at `src/components/ui/tag.tsx:5`.
+
+### Usage
+
+```tsx
+import { Tag } from "@/components/ui/tag"
+
+<Tag>React</Tag>
+<Tag>TypeScript</Tag>
+<Tag>Next.js</Tag>
+```
+
+### Use Cases
+
+- Technology tags
+- Category labels
+- Status indicators
+- Skill badges
+
+## CodeBlock
+
+Syntax-highlighted code block with copy functionality. Located at `src/components/ui/code-block.tsx:19`.
+
+### Usage
+
+```tsx
+import { CodeBlock } from "@/components/ui/code-block"
+
+const code = `function hello() {
+  console.log("Hello, world!")
+}`
+
+<CodeBlock language="javascript" codeContent={code}>
+  {code}
+</CodeBlock>
+```
+
+### Features
+
+- Syntax highlighting with Prism
+- Line numbers
+- Copy button integration
+- Theme-aware (light/dark mode)
+- Multiple language support
+
+## Typography
+
+Typography components for consistent text styling. Located at `src/components/ui/typography.tsx:12`.
+
+### Prose Container
+
+```tsx
+import { Prose } from "@/components/ui/typography"
+
+<Prose>
+  <h1>Article Title</h1>
+  <p>Article content with proper typography styling.</p>
+</Prose>
+```
+
+### Heading with Anchor
+
+```tsx
+import { Heading } from "@/components/ui/typography"
+
+<Heading as="h2" id="section-title">
+  Section Title
+</Heading>
+```
+
+This creates a heading with an automatic anchor link icon on hover.
+
+## Shared Components
+
+Higher-level components built from UI primitives.
+
+### CopyButton
+
+Button with copy-to-clipboard functionality. Located at `src/components/shared/copy-button.tsx:22`.
+
+```tsx
+import { CopyButton } from "@/components/shared/copy-button"
+
+<CopyButton value="Text to copy" />
+```
+
+Features:
+- Success/error state feedback
+- Optimistic UI updates
+- Icon transitions
+- Automatic reset after 2 seconds
+
+### Loading
+
+Loading indicator component. Located at `src/components/shared/loading.tsx:4`.
+
+```tsx
+import { Loading } from "@/components/shared/loading"
+
+<Loading />
+```
+
+### Glimpse
+
+Hover card component for previews. Located at `src/components/shared/glimpse/index.tsx:10`.
+
+```tsx
+import {
+  Glimpse,
+  GlimpseContent,
+  GlimpseTrigger,
+  GlimpseTitle,
+  GlimpseDescription,
+  GlimpseImage,
+} from "@/components/shared/glimpse"
+
+<Glimpse>
+  <GlimpseTrigger>Hover me</GlimpseTrigger>
+  <GlimpseContent>
+    <GlimpseImage src="/image.jpg" alt="Preview" width={400} height={250} />
+    <GlimpseTitle>Preview Title</GlimpseTitle>
+    <GlimpseDescription>A brief description</GlimpseDescription>
+  </GlimpseContent>
+</Glimpse>
+```
+
+### Marquee
+
+Scrolling marquee component. Located at `src/components/shared/kibo-ui/marquee/index.tsx:11`.
+
+```tsx
+import {
+  Marquee,
+  MarqueeContent,
+  MarqueeFade,
+  MarqueeItem,
+} from "@/components/shared/kibo-ui/marquee"
+
+<Marquee>
+  <MarqueeFade side="left" />
+  <MarqueeContent>
+    <MarqueeItem>Item 1</MarqueeItem>
+    <MarqueeItem>Item 2</MarqueeItem>
+    <MarqueeItem>Item 3</MarqueeItem>
+  </MarqueeContent>
+  <MarqueeFade side="right" />
+</Marquee>
+```
+
+### ImageZoom
+
+Zoomable image component. Located at `src/components/shared/kibo-ui/image-zoom/index.tsx:13`.
+
+```tsx
+import { ImageZoom } from "@/components/shared/kibo-ui/image-zoom"
+import Image from "next/image"
+
+<ImageZoom>
+  <Image src="/image.jpg" alt="Zoomable" width={800} height={600} />
+</ImageZoom>
+```
+
+## Styling Best Practices
+
+### Using the cn() Utility
+
+Always use `cn()` to combine class names:
+
+```tsx
+import { cn } from "@/lib/utils"
+
+function CustomButton({ className, ...props }) {
+  return (
+    <button
+      className={cn(
+        "rounded-md px-4 py-2",  // Base styles
+        "hover:bg-accent",        // State styles
+        className                  // Override prop
+      )}
+      {...props}
+    />
+  )
+}
+```
+
+### Component Composition
+
+Build complex UIs by composing simple components:
+
+```tsx
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Panel, PanelContent } from "@/components/ui/panel"
+
+<Panel>
+  <PanelContent>
+    <form className="flex gap-2">
+      <Input placeholder="Enter text" />
+      <Button type="submit">Submit</Button>
+    </form>
+  </PanelContent>
+</Panel>
+```
+
+## Next Steps
+
+<Card title="Explore Animations" icon="wand-magic-sparkles" href="/components/animations">
+  Learn about motion-powered animated components and effects
+</Card>

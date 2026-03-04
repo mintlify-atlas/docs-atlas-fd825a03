@@ -1,0 +1,267 @@
+---
+title: "Profile Data Configuration"
+description: "Customize your portfolio by configuring the PROFILE object with your personal information, experience, and projects"
+---
+
+The `PROFILE` object in `src/content/profile.ts` is the central configuration for your entire portfolio. It contains all your personal information, work experience, projects, tech stack, and more.
+
+## Profile Structure
+
+The profile is structured with basic information and multiple sections:
+
+```typescript
+export const PROFILE: IProfile = {
+  // Basic Information
+  firstName: "Tony",
+  lastName: "Santana",
+  displayName: "Tony Santana",
+  username: "tonysantana1492",
+  bio: "Creating with code. Small details matter.",
+  
+  // Contact Information (base64 encoded)
+  email: "base64_encoded_email",
+  phoneNumber: "base64_encoded_phone",
+  
+  // Social Profiles
+  githubUserName: "tonysantana1492",
+  twitterUsername: "tonysantana1492",
+  linkedinUserName: "tonysantana1492",
+  
+  // Sections
+  sections: {
+    about: { /* ... */ },
+    experiences: { /* ... */ },
+    projects: { /* ... */ },
+    techStack: { /* ... */ },
+    // ... more sections
+  }
+}
+```
+
+## Basic Information
+
+<ParamField path="firstName" type="string" required>
+  Your first name
+</ParamField>
+
+<ParamField path="lastName" type="string" required>
+  Your last name
+</ParamField>
+
+<ParamField path="displayName" type="string" required>
+  The name displayed on your portfolio (can be different from firstName + lastName)
+</ParamField>
+
+<ParamField path="username" type="string" required>
+  Your unique username used across the site
+</ParamField>
+
+<ParamField path="bio" type="string" required>
+  A short bio or tagline that appears on your profile
+</ParamField>
+
+<ParamField path="flipSentences" type="string[]">
+  An array of sentences that rotate/flip on your homepage
+  
+  ```typescript
+  flipSentences: [
+    "Creating with code. Small details matter.",
+    "Software Engineer at OfficePuzzle",
+    "Open Source Contributor",
+  ]
+  ```
+</ParamField>
+
+<ParamField path="jobTitle" type="string" required>
+  Your current job title
+</ParamField>
+
+<ParamField path="avatar" type="string" required>
+  URL or path to your profile photo
+</ParamField>
+
+<ParamField path="ogImage" type="string" required>
+  URL or path to your Open Graph image for social sharing
+</ParamField>
+
+## Contact Information
+
+<Warning>
+  For privacy, email and phone number should be base64 encoded. Use a [base64 encoder](https://www.base64encode.org/) to encode your contact information.
+</Warning>
+
+<ParamField path="email" type="string" required>
+  Your email address (base64 encoded)
+  
+  ```typescript
+  // Example: "tony@example.com" becomes:
+  email: "dG9ueUBleGFtcGxlLmNvbQ=="
+  ```
+</ParamField>
+
+<ParamField path="phoneNumber" type="string">
+  Your phone number in E.164 format, base64 encoded
+  
+  ```typescript
+  // Example: "+1234567890" becomes:
+  phoneNumber: "KzEyMzQ1Njc4OTA="
+  ```
+</ParamField>
+
+<ParamField path="address" type="string">
+  Your location or address
+</ParamField>
+
+<ParamField path="website" type="string" required>
+  Your portfolio website URL
+</ParamField>
+
+## Social Profiles
+
+<ParamField path="githubUserName" type="string">
+  Your GitHub username (enables GitHub contributions graph)
+</ParamField>
+
+<ParamField path="twitterUsername" type="string">
+  Your Twitter/X username (without @)
+</ParamField>
+
+<ParamField path="linkedinUserName" type="string">
+  Your LinkedIn username
+</ParamField>
+
+<ParamField path="linkedinId" type="string">
+  Your LinkedIn profile ID
+</ParamField>
+
+## SEO Configuration
+
+<ParamField path="keywords" type="string[]" required>
+  Keywords for SEO optimization
+  
+  ```typescript
+  keywords: [
+    "Tony Santana",
+    "Software Engineer",
+    "Full Stack Developer",
+    "React",
+    "Next.js",
+    "TypeScript"
+  ]
+  ```
+</ParamField>
+
+## Metadata
+
+The `metadata` object controls resume generation and styling:
+
+```typescript
+metadata: {
+  theme: {
+    text: "#18181b",
+    primary: "#0A66C2",
+    background: "#ffffff"
+  },
+  typography: {
+    font: {
+      size: 14,
+      family: "Inter",
+      subset: "latin",
+      variants: ["regular", "italic", "700", "700italic"]
+    },
+    hideIcons: false,
+    lineHeight: 1.5,
+    underlineLinks: false
+  },
+  page: {
+    format: "a4",
+    margin: 15,
+    options: {
+      breakLine: true,
+      pageNumbers: true
+    }
+  }
+}
+```
+
+## Portfolio Sections
+
+Each section follows a common structure:
+
+```typescript
+interface Section<T> {
+  id: string;           // Unique identifier for the section
+  name: string;         // Display name
+  columns: number;      // Number of columns for layout (1-3)
+  content?: string;     // Optional description
+  visible: boolean;     // Show/hide the section
+  separateLinks: boolean; // Whether to separate links
+  items: T[];          // Array of section items
+  icon: string;        // Icon name (Lucide icon)
+}
+```
+
+### Available Sections
+
+- **about** - About me information
+- **experiences** - Work experience
+- **educations** - Education history
+- **projects** - Portfolio projects
+- **techStack** - Technologies and tools
+- **certifications** - Professional certifications
+- **awards** - Awards and achievements
+- **socialLinks** - Social media profiles
+
+<Tip>
+  See [Portfolio Sections](/customization/portfolio-sections) for detailed configuration of each section type.
+</Tip>
+
+## Example Configuration
+
+Here's a complete example for the experiences section:
+
+```typescript
+experiences: {
+  id: "experiences",
+  name: "Experience",
+  columns: 1,
+  visible: true,
+  separateLinks: false,
+  icon: "briefcase",
+  items: [
+    {
+      id: "officepuzzle",
+      companyName: "OfficePuzzle",
+      companyLogo: "/images/companies/officepuzzle.svg",
+      isCurrentEmployer: true,
+      website: "https://officepuzzle.com",
+      positions: [
+        {
+          id: "senior-engineer",
+          title: "Senior Software Engineer",
+          employmentType: "Full-time",
+          location: "Remote",
+          employmentPeriod: {
+            start: "2023-01",
+            end: undefined // Current position
+          },
+          description: "Leading development of healthcare platform...",
+          skills: ["Next.js", "TypeScript", "PostgreSQL"],
+          isExpanded: false
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Portfolio Sections" icon="layer-group" href="/customization/portfolio-sections">
+    Learn how to configure each portfolio section
+  </Card>
+  <Card title="Site Configuration" icon="gear" href="/customization/site-configuration">
+    Configure site-wide settings and navigation
+  </Card>
+</CardGroup>

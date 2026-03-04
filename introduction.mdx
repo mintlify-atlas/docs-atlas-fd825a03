@@ -1,0 +1,211 @@
+---
+title: "Welcome to Tony Santana Portfolio"
+description: "Build your own minimal, modern portfolio and blog with Next.js"
+---
+
+<div className="relative overflow-hidden bg-gradient-to-b from-[#0D0D0D] to-[#1a1d27] dark:from-[#0D0D0D] dark:to-[#1a1d27] py-20 mb-16">
+  <div className="max-w-5xl mx-auto px-6 relative z-10">
+    <div className="text-center max-w-3xl mx-auto">
+      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+        Build Your Perfect Portfolio
+      </h1>
+      <p className="text-lg sm:text-xl text-gray-300 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+        A minimal, pixel-perfect portfolio and blog template built with Next.js, shadcn/ui, and Tailwind CSS. Fully customizable and ready to deploy.
+      </p>
+      <div className="flex flex-wrap gap-4 justify-center">
+        <a 
+          href="/installation" 
+          className="inline-flex items-center px-6 py-3 bg-[#7c7c7c] hover:bg-[#6b6b6b] text-white font-semibold rounded-full transition-colors"
+        >
+          Get Started
+        </a>
+        <a 
+          href="https://github.com/tonysantana1492/portfolio" 
+          className="inline-flex items-center px-6 py-3 border border-white/30 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-full transition-colors"
+        >
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Quick Start
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Get your portfolio up and running in minutes
+  </p>
+
+  <Steps>
+    <Step title="Clone the repository">
+      Clone the repository to your local machine using Git:
+      
+      ```bash
+      git clone https://github.com/tonysantana1492/portfolio.git
+      cd portfolio
+      ```
+    </Step>
+
+    <Step title="Install dependencies">
+      Install the required dependencies using pnpm (recommended), npm, or yarn:
+      
+      <CodeGroup>
+      ```bash pnpm
+      pnpm install
+      ```
+      
+      ```bash npm
+      npm install
+      ```
+      
+      ```bash yarn
+      yarn install
+      ```
+      </CodeGroup>
+    </Step>
+
+    <Step title="Configure your profile">
+      Update the profile data in `src/content/profile.ts` with your own information:
+      
+      ```typescript
+      export const PROFILE = {
+        displayName: "Your Name",
+        username: "yourusername",
+        bio: "Your bio goes here",
+        // ... more configuration
+      }
+      ```
+      
+      <Tip>See the [Profile Data](/customization/profile-data) guide for detailed configuration options.</Tip>
+    </Step>
+
+    <Step title="Start the development server">
+      Launch the development server and view your portfolio:
+      
+      ```bash
+      pnpm dev
+      ```
+      
+      Your portfolio will be available at `http://localhost:3000`
+    </Step>
+  </Steps>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Key Features
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Everything you need for a professional portfolio website
+  </p>
+
+  <CardGroup cols={2}>
+    <Card title="Customizable Sections" icon="palette" href="/customization/portfolio-sections">
+      Display your experience, projects, tech stack, awards, and certifications with flexible section configurations.
+    </Card>
+    <Card title="MDX Blog" icon="newspaper" href="/features/blog">
+      Write blog posts in MDX with syntax highlighting, dynamic OG images, and RSS feed support.
+    </Card>
+    <Card title="Resume Generation" icon="file-user" href="/features/resume">
+      Generate a professional PDF resume from your portfolio data with customizable templates.
+    </Card>
+    <Card title="vCard Support" icon="address-card" href="/features/vcard">
+      Download a vCard with your contact information for easy sharing across devices.
+    </Card>
+    <Card title="GitHub Integration" icon="github" href="/features/github-integration">
+      Display your GitHub contributions graph and repository statistics automatically.
+    </Card>
+    <Card title="Dark Mode" icon="moon" href="/customization/theme-styling">
+      Beautiful light and dark themes with system preference detection and smooth transitions.
+    </Card>
+    <Card title="SEO Optimized" icon="magnifying-glass" href="/deployment/build-configuration">
+      JSON-LD schema, dynamic sitemaps, robots.txt, and meta tags for excellent search visibility.
+    </Card>
+    <Card title="Analytics Ready" icon="chart-line" href="/features/analytics">
+      PostHog integration for tracking user behavior and optimizing your portfolio.
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Built With Modern Tools
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Leveraging the best technologies for performance and developer experience
+  </p>
+
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-gray-50 dark:bg-[#1a1d27]">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Next.js 16</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Built on the latest Next.js with App Router, React Server Components, and optimized for performance.
+      </p>
+    </div>
+    
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-gray-50 dark:bg-[#1a1d27]">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tailwind CSS v4</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Styled with the latest Tailwind CSS for rapid UI development and responsive design.
+      </p>
+    </div>
+    
+    <div className="p-6 rounded-lg border border-gray-200 dark:border-[#27272a] bg-gray-50 dark:bg-[#1a1d27]">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">shadcn/ui</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Beautiful, accessible UI components built with Radix UI primitives and customizable design tokens.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+    Explore the Documentation
+  </h2>
+  <p className="text-base text-gray-600 dark:text-gray-400 mb-8">
+    Learn how to customize and deploy your portfolio
+  </p>
+
+  <CardGroup cols={3}>
+    <Card title="Installation" icon="download" href="/installation">
+      Set up your development environment
+    </Card>
+    <Card title="Profile Data" icon="user" href="/customization/profile-data">
+      Configure your personal information
+    </Card>
+    <Card title="Portfolio Sections" icon="layer-group" href="/customization/portfolio-sections">
+      Customize your portfolio sections
+    </Card>
+    <Card title="Blog Posts" icon="pen-to-square" href="/blog/creating-posts">
+      Write and publish blog content
+    </Card>
+    <Card title="Components" icon="puzzle-piece" href="/components/overview">
+      Explore available UI components
+    </Card>
+    <Card title="Deploy to Vercel" icon="rocket" href="/deployment/vercel">
+      Deploy your portfolio to production
+    </Card>
+  </CardGroup>
+</div>
+
+<div className="mt-16 mb-16 max-w-5xl mx-auto px-6">
+  <div className="p-8 rounded-2xl border border-gray-200 dark:border-[#27272a] bg-gradient-to-br from-gray-50 to-white dark:from-[#1a1d27] dark:to-[#0f1117]">
+    <div className="text-center max-w-2xl mx-auto">
+      <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-white mb-4">
+        Ready to Build Your Portfolio?
+      </h2>
+      <p className="text-base text-gray-600 dark:text-gray-400 mb-6">
+        Start with our installation guide and have your portfolio live in minutes.
+      </p>
+      <a 
+        href="/installation" 
+        className="inline-flex items-center px-6 py-3 bg-[#7c7c7c] hover:bg-[#6b6b6b] text-white font-semibold rounded-full transition-colors"
+      >
+        Get Started Now
+      </a>
+    </div>
+  </div>
+</div>

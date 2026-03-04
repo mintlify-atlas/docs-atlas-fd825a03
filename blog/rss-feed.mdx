@@ -1,0 +1,352 @@
+---
+title: RSS Feed
+description: Configure and use the automatically generated RSS feed for your blog, including feed URL, content syndication, and customization options.
+---
+
+Your blog automatically generates an RSS 2.0 feed that includes all published posts. This allows readers to subscribe and follow your content using RSS readers.
+
+## Feed URL
+
+The RSS feed is available at:
+
+```
+https://your-domain.com/rss
+```
+
+For the Tony Santana portfolio, the feed is at:
+
+```
+https://www.tonysantana.dev/rss
+```
+
+## Feed Implementation
+
+The RSS feed is implemented as a Next.js Route Handler at `src/app/(app)/(docs)/blog/rss/route.ts`:
+
+```typescript title="src/app/(app)/(docs)/blog/rss/route.ts"
+import { SITE_INFO } from "@/config/site.config";
+import { getAllPosts } from "@/services/blog";
+
+export function GET() {
+  const allPosts = getAllPosts();
+
+  const itemsXml = allPosts
+    .map(
+      (post) =>
+        `<item>
+          <title>${post.metadata.title}</title>
+          <link>${SITE_INFO.url}/blog/${post.slug}</link>
+          <description>${post.metadata.description || ""}</description>
+          <pubDate>${new Date(post.metadata.createdAt).toISOString()}</pubDate>
+        </item>`
+    )
+    .join("\n");
+
+  const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+  <rss version="2.0">
+    <channel>
+      <title>Blog | ${SITE_INFO.name}</title>
+      <link>${SITE_INFO.url}</link>
+      <description>${SITE_INFO.description}</description>
+      ${itemsXml}
+    </channel>
+  </rss>`;
+
+  return new Response(rssFeed, {
+    headers: {
+      "Content-Type": "text/xml",
+    },
+  });
+}
+```
+
+## Feed Content
+
+Each feed item includes:
+
+- **title** - Post title from frontmatter
+- **link** - Full URL to the blog post
+- **description** - Post description from frontmatter
+- **pubDate** - Publication date in ISO format
+
+## Metadata Discovery
+
+The RSS feed is automatically discoverable by browsers and RSS readers through metadata in the blog layout:
+
+```typescript title="src/app/(app)/(docs)/blog/layout.tsx" {14-20}
+export const metadata: Metadata = {
+  title: {
+    template: `%s | Blog | ${SITE_INFO.name}`,
+    default: `Blog | ${SITE_INFO.name}`,
+  },
+  alternates: {
+    canonical: "/blog",
+    types: {
+      "application/rss+xml": [
+        {
+          url: "/rss",
+          title: `${SITE_INFO.name} Blog RSS Feed`,
+        },
+      ],
+    },
+  },
+  // ... other metadata
+};
+```
+
+This adds a `<link>` tag to the blog pages:
+
+```html
+<link 
+  rel="alternate" 
+  type="application/rss+xml" 
+  href="/rss" 
+  title="Tony Santana Blog RSS Feed"
+/>
+```
+
+## Using the RSS Feed
+
+### Subscribe in RSS Readers
+
+Readers can subscribe to your blog using popular RSS readers:
+
+- **Feedly**: https://feedly.com
+- **Inoreader**: https://www.inoreader.com
+- **NewsBlur**: https://newsblur.com
+- **The Old Reader**: https://theoldreader.com
+
+Simply paste your feed URL into the reader's subscription field.
+
+### Testing Your Feed
+
+Validate your RSS feed using:
+
+- **W3C Feed Validator**: https://validator.w3.org/feed/
+- **RSS Feed Validator**: https://www.rssboard.org/rss-validator/
+
+Example validation:
+
+```bash
+curl https://your-domain.com/rss
+```
+
+## Customizing the Feed
+
+### Adding More Fields
+
+You can enhance feed items with additional RSS 2.0 fields:
+
+```typescript title="src/app/(app)/(docs)/blog/rss/route.ts"
+const itemsXml = allPosts
+  .map(
+    (post) =>
+      `<item>
+        <title>${post.metadata.title}</title>
+        <link>${SITE_INFO.url}/blog/${post.slug}</link>
+        <description>${post.metadata.description || ""}</description>
+        <pubDate>${new Date(post.metadata.createdAt).toISOString()}</pubDate>
+        <author>your-email@example.com (Your Name)</author>
+        <category>${post.metadata.category || "General"}</category>
+        <guid isPermaLink="true">${SITE_INFO.url}/blog/${post.slug}</guid>
+      </item>`
+  )
+  .join("\n");
+```
+
+### Adding Channel Metadata
+
+Enhance the channel element:
+
+```typescript
+const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog | ${SITE_INFO.name}</title>
+    <link>${SITE_INFO.url}</link>
+    <description>${SITE_INFO.description}</description>
+    <language>en-us</language>
+    <lastBuildDate>${new Date().toISOString()}</lastBuildDate>
+    <atom:link href="${SITE_INFO.url}/rss" rel="self" type="application/rss+xml" />
+    <image>
+      <url>${SITE_INFO.url}/images/logo.svg</url>
+      <title>Blog | ${SITE_INFO.name}</title>
+      <link>${SITE_INFO.url}</link>
+    </image>
+    ${itemsXml}
+  </channel>
+</rss>`;
+```
+
+### Full Content in Feed
+
+To include full post content instead of just descriptions:
+
+```typescript
+import { stripMarkdown } from '@/lib/strip-markdown'; // You'll need to create this
+
+const itemsXml = allPosts
+  .map(
+    (post) =>
+      `<item>
+        <title>${post.metadata.title}</title>
+        <link>${SITE_INFO.url}/blog/${post.slug}</link>
+        <description><![CDATA[${post.content}]]></description>
+        <pubDate>${new Date(post.metadata.createdAt).toISOString()}</pubDate>
+      </item>`
+  )
+  .join("\n");
+```
+
+<Note>
+Be cautious with full content feeds - they increase feed size significantly. Most readers prefer summaries with a "read more" link.
+</Note>
+
+## RSS Best Practices
+
+### Content
+
+- Keep descriptions concise (150-300 characters)
+- Include publication dates for all items
+- Use absolute URLs for all links
+- Escape special XML characters in content
+
+### Performance
+
+- Limit feed to recent posts (e.g., last 20-50)
+- Consider caching the feed response
+- Set appropriate cache headers
+
+### SEO
+
+- Add feed autodiscovery link tags
+- Submit feed to major aggregators
+- Include feed URL in your footer
+- Promote feed subscription on blog pages
+
+## Limiting Feed Items
+
+To limit the feed to recent posts only:
+
+```typescript title="src/app/(app)/(docs)/blog/rss/route.ts"
+export function GET() {
+  const allPosts = getAllPosts();
+  const recentPosts = allPosts.slice(0, 20); // Last 20 posts only
+
+  const itemsXml = recentPosts
+    .map(/* ... */)
+    .join("\n");
+
+  // ... rest of the code
+}
+```
+
+## Caching the Feed
+
+Add cache headers for better performance:
+
+```typescript title="src/app/(app)/(docs)/blog/rss/route.ts"
+export function GET() {
+  // ... generate feed
+
+  return new Response(rssFeed, {
+    headers: {
+      "Content-Type": "text/xml",
+      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate",
+    },
+  });
+}
+```
+
+Or use Next.js revalidation:
+
+```typescript
+export const revalidate = 3600; // Revalidate every hour
+
+export function GET() {
+  // ... generate feed
+}
+```
+
+## Promoting Your Feed
+
+Add an RSS subscription link to your blog:
+
+```tsx title="src/app/(app)/(docs)/blog/page.tsx"
+import { RssIcon } from 'lucide-react';
+import Link from 'next/link';
+
+export default function BlogPage() {
+  return (
+    <div>
+      <h1>Blog</h1>
+      <Link href="/rss" className="flex items-center gap-2">
+        <RssIcon className="h-4 w-4" />
+        Subscribe via RSS
+      </Link>
+      {/* ... blog posts */}
+    </div>
+  );
+}
+```
+
+## Alternative Formats
+
+### Atom Feed
+
+For an Atom 1.0 feed instead of RSS 2.0:
+
+```typescript
+const atomFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Blog | ${SITE_INFO.name}</title>
+  <link href="${SITE_INFO.url}/rss" rel="self"/>
+  <link href="${SITE_INFO.url}"/>
+  <updated>${new Date().toISOString()}</updated>
+  <id>${SITE_INFO.url}/</id>
+  ${allPosts.map(post => `
+    <entry>
+      <title>${post.metadata.title}</title>
+      <link href="${SITE_INFO.url}/blog/${post.slug}"/>
+      <id>${SITE_INFO.url}/blog/${post.slug}</id>
+      <updated>${new Date(post.metadata.updatedAt).toISOString()}</updated>
+      <published>${new Date(post.metadata.createdAt).toISOString()}</published>
+      <summary>${post.metadata.description}</summary>
+    </entry>
+  `).join('')}
+</feed>`;
+```
+
+### JSON Feed
+
+For a JSON Feed format:
+
+```typescript
+export function GET() {
+  const allPosts = getAllPosts();
+
+  const jsonFeed = {
+    version: "https://jsonfeed.org/version/1.1",
+    title: `Blog | ${SITE_INFO.name}`,
+    home_page_url: SITE_INFO.url,
+    feed_url: `${SITE_INFO.url}/feed.json`,
+    description: SITE_INFO.description,
+    items: allPosts.map(post => ({
+      id: `${SITE_INFO.url}/blog/${post.slug}`,
+      url: `${SITE_INFO.url}/blog/${post.slug}`,
+      title: post.metadata.title,
+      content_text: post.metadata.description,
+      date_published: new Date(post.metadata.createdAt).toISOString(),
+      date_modified: new Date(post.metadata.updatedAt).toISOString(),
+    })),
+  };
+
+  return Response.json(jsonFeed);
+}
+```
+
+## Next Steps
+
+- Learn about [creating blog posts](/blog/creating-posts)
+- Explore [frontmatter options](/blog/frontmatter)
+- Use [MDX components](/blog/mdx-components) in your posts

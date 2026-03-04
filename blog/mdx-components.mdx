@@ -1,0 +1,299 @@
+---
+title: MDX Components
+description: Discover the custom MDX components available for creating rich, interactive blog content with code blocks, tabs, embeds, and more.
+---
+
+MDX allows you to use React components directly in your blog posts. This portfolio includes a rich set of custom components for enhanced content.
+
+## Available Components
+
+All components are defined in `src/components/shared/mdx.tsx` and automatically available in your blog posts.
+
+### Typography Components
+
+Standard HTML elements are enhanced with custom styling:
+
+```mdx
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+###### Heading 6
+
+Regular paragraph text with **bold** and *italic* formatting.
+
+`inline code` for technical terms.
+```
+
+### Code Blocks
+
+Syntax-highlighted code blocks with language support:
+
+````mdx
+```typescript
+function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+```
+
+```bash
+npm install next
+```
+
+```tsx title="app/page.tsx"
+export default function Page() {
+  return <h1>Welcome</h1>;
+}
+```
+````
+
+Code blocks automatically include:
+- Syntax highlighting with rehype-pretty-code
+- Copy button in the top-right corner
+- Language icons in the caption
+- Line numbers and highlighting support
+
+### Package Manager Commands
+
+Automatic package manager tabs for installation commands:
+
+````mdx
+```bash
+npm install puppeteer-core @sparticuz/chromium
+```
+````
+
+This automatically generates tabs for npm, pnpm, yarn, and bun.
+
+### Steps Component
+
+Create step-by-step guides:
+
+```mdx
+<Steps>
+
+<Step>
+
+### Step 1: Setup
+
+Install the required dependencies.
+
+</Step>
+
+<Step>
+
+### Step 2: Configure
+
+Update your configuration file.
+
+</Step>
+
+<Step>
+
+### Step 3: Deploy
+
+Deploy your application.
+
+</Step>
+
+</Steps>
+```
+
+### Tabs Component
+
+Organize content in tabs with the Tabs, TabsList, TabsTrigger, and TabsContent components from your UI library. This allows you to display alternative content or code examples in a compact format.
+
+### Component Preview
+
+Showcase interactive component examples:
+
+```mdx
+<ComponentPreview name="button-demo" />
+```
+
+### Component Source
+
+Display component source code:
+
+```mdx
+<ComponentSource name="button" />
+```
+
+### Code Tabs
+
+Display code in multiple files with tabs using CodeTabs components. Each code block inside will be displayed as a separate tab with its title.
+
+### Collapsible Code
+
+Make long code blocks collapsible using the CodeCollapsibleWrapper component. This is useful for lengthy code examples that readers can expand when needed.
+
+### YouTube Embed
+
+Embed YouTube videos:
+
+```mdx
+<YouTubeEmbed videoId="dQw4w9WgXcQ" />
+```
+
+### Framed Image
+
+Display images with a frame border:
+
+```mdx
+<FramedImage src="/images/screenshot.webp" alt="Screenshot" />
+```
+
+### Tables
+
+Markdown tables are enhanced with custom styling:
+
+```mdx
+| Feature | Supported |
+|---------|----------|
+| MDX | ✓ |
+| Syntax Highlighting | ✓ |
+| Dark Mode | ✓ |
+```
+
+### Layout Components
+
+#### Right-aligned Text
+
+```mdx
+<Right>Published: 2025-09-21</Right>
+```
+
+#### Centered Content
+
+```mdx
+<Center>
+This text will be centered.
+</Center>
+```
+
+## Real-World Example
+
+Here's an example from an actual blog post:
+
+```mdx title="src/content/blog/print-pdf-in-vercel.mdx"
+---
+title: "Deploying an HTML-to-PDF API on Vercel with Puppeteer"
+author: "Tony Santana"
+description: "In this article, we will explore how to create an HTML-to-PDF API on Vercel using Puppeteer"
+readingTime: "4 min read"
+image: /images/blog/print-pdf-in-vercel.webp
+createdAt: 2025-09-26
+updatedAt: 2025-09-26
+new: true
+---
+
+## Step 1: Project Setup
+
+Start by creating a new Next.js project:
+
+```bash
+npx create-next-app@latest html-to-pdf-on-vercel --typescript --tailwind --app
+```
+
+Install the required packages for Puppeteer:
+
+```bash
+npm install puppeteer-core @sparticuz/chromium
+```
+
+```bash
+npm install -D puppeteer
+```
+
+---
+
+## Step 2: Setup the API Route
+
+Create a new file at `app/api/pdf/route.ts`:
+
+```ts
+import { NextRequest, NextResponse } from "next/server";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const htmlParam = searchParams.get("html");
+  
+  if (!htmlParam) {
+    return new NextResponse("Please provide the HTML.", { status: 400 });
+  }
+  
+  // ... rest of the code
+}
+```
+```
+
+## Component Configuration
+
+Components are configured in `src/components/shared/mdx.tsx` with:
+
+### MDX Options
+
+- **Remark plugins**: remarkGfm, remarkCodeImport
+- **Rehype plugins**: 
+  - rehypeExternalLinks - Opens external links in new tabs
+  - rehypeSlug - Adds IDs to headings
+  - rehypeNpmCommand - Converts npm commands to tabs
+  - rehypeAddQueryParams - Adds UTM parameters to links
+
+### Syntax Highlighting
+
+Code highlighting is powered by rehype-pretty-code, supporting:
+
+- 100+ programming languages
+- Line highlighting
+- Line numbers
+- File names in captions
+- Inline code highlighting
+
+## Custom Components
+
+You can add your own custom components to use in blog posts.
+
+### Create the component
+
+Create a new component in `src/components/shared/`:
+
+```tsx title="src/components/shared/my-component.tsx"
+export function MyComponent(props: { children: React.ReactNode }) {
+  return <div className="my-custom-style">{props.children}</div>;
+}
+```
+
+### Register in MDX
+
+Add it to the components object in `src/components/shared/mdx.tsx`:
+
+```tsx
+import { MyComponent } from "@/components/shared/my-component";
+
+export const components: MDXRemoteProps["components"] = {
+  // ... existing components
+  MyComponent,
+};
+```
+
+### Use in posts
+
+Use it in any blog post:
+
+Use it in your blog posts like any other component:
+
+```mdx
+<MyComponent>
+  Custom content here!
+</MyComponent>
+```
+
+## Next Steps
+
+- View [frontmatter options](/blog/frontmatter)
+- Learn about [creating posts](/blog/creating-posts)
+- Configure the [RSS feed](/blog/rss-feed)

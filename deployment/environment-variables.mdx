@@ -1,0 +1,312 @@
+---
+title: Environment Variables
+description: Configure environment variables for your portfolio application including core settings, registry configuration, external services, and analytics.
+---
+
+Environment variables control critical aspects of your portfolio, from basic configuration to third-party integrations. This guide covers all available environment variables and their usage.
+
+## Setup
+
+Create a `.env.local` file in your project root to configure environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+<Warning>
+Never commit `.env.local` to version control. It's already included in `.gitignore` by default.
+</Warning>
+
+## Core Application
+
+These variables configure the fundamental aspects of your portfolio application.
+
+<ParamField path="APP_URL" type="string" required>
+  Application base URL used for metadata, OG images, and canonical URLs.
+  
+  **Example:**
+  ```bash
+  APP_URL=https://www.tonysantana.dev
+  ```
+  
+  This variable is referenced in `src/config/site.config.ts:24` for site configuration.
+</ParamField>
+
+<ParamField path="NODE_ENV" type="string" default="development">
+  Node.js environment mode. Automatically set by Next.js during build and development.
+  
+  **Valid values:**
+  - `development` - Development mode with debugging enabled
+  - `production` - Production mode with optimizations
+  - `test` - Testing environment
+  
+  Used in `src/config/app.config.ts:8` for environment detection.
+</ParamField>
+
+## Registry Configuration
+
+These variables configure the component registry for shadcn CLI integration.
+
+<ParamField path="REGISTRY_NAMESPACE" type="string">
+  Namespace identifier for your component registry used by shadcn CLI.
+  
+  **Example:**
+  ```bash
+  REGISTRY_NAMESPACE=@tonysantana
+  ```
+  
+  <Note>
+  Use the `@` prefix to follow npm package naming conventions.
+  </Note>
+</ParamField>
+
+<ParamField path="REGISTRY_NAMESPACE_URL" type="string">
+  URL pattern for component resolution by shadcn CLI.
+  
+  **Example:**
+  ```bash
+  REGISTRY_NAMESPACE_URL=https://www.tonysantana.dev/r/{name}.json
+  ```
+  
+  The `{name}` placeholder is replaced with the component name during resolution.
+</ParamField>
+
+## External Services
+
+Configure integrations with third-party services and APIs.
+
+<ParamField path="GITHUB_API_TOKEN" type="string">
+  GitHub Personal Access Token for API calls to fetch repository data and stars.
+  
+  **Getting your token:**
+  
+  <Steps>
+    <Step title="Navigate to GitHub Settings">
+      Go to [GitHub Token Settings](https://github.com/settings/tokens)
+    </Step>
+    
+    <Step title="Generate New Token">
+      Click "Generate new token" and select "Personal access token (classic)"
+    </Step>
+    
+    <Step title="Configure Permissions">
+      Select the following scopes:
+      - `public_repo` - Access public repositories
+      - `read:user` - Read user profile data
+    </Step>
+    
+    <Step title="Copy Token">
+      Generate and copy the token immediately (you won't see it again)
+    </Step>
+    
+    <Step title="Add to Environment">
+      ```bash
+      GITHUB_API_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      ```
+    </Step>
+  </Steps>
+  
+  <Note>
+  The token is used server-side only and is never exposed to the client.
+  </Note>
+</ParamField>
+
+<ParamField path="NEXT_PUBLIC_DMCA_URL" type="string">
+  DMCA Protection badge URL from DMCA ProtectionPro service.
+  
+  **Example:**
+  ```bash
+  NEXT_PUBLIC_DMCA_URL=https://www.dmca.com/Protection/Status.aspx?ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  ```
+  
+  Get your badge URL from [DMCA ProtectionPro](https://www.dmca.com/ProtectionPro.aspx).
+  
+  <Warning>
+  This variable has the `NEXT_PUBLIC_` prefix, meaning it's exposed to the browser.
+  </Warning>
+</ParamField>
+
+<ParamField path="ADS_TXT" type="string">
+  Content for the `/ads.txt` file used by advertising networks.
+  
+  **Example:**
+  ```bash
+  ADS_TXT="google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0"
+  ```
+  
+  Referenced in `src/app/ads.txt/route.ts:4` to dynamically serve ads.txt content.
+</ParamField>
+
+## Analytics & Tracking
+
+Configure PostHog analytics for user behavior tracking and insights.
+
+<ParamField path="NEXT_PUBLIC_POSTHOG_KEY" type="string">
+  PostHog project API key for analytics initialization.
+  
+  **Getting your key:**
+  
+  <Steps>
+    <Step title="Sign up for PostHog">
+      Create an account at [PostHog](https://posthog.com)
+    </Step>
+    
+    <Step title="Create Project">
+      Create a new project in your PostHog dashboard
+    </Step>
+    
+    <Step title="Copy API Key">
+      Navigate to Project Settings > Project API Key
+    </Step>
+    
+    <Step title="Add to Environment">
+      ```bash
+      NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      ```
+    </Step>
+  </Steps>
+  
+  <Warning>
+  This is a public key (prefixed with `NEXT_PUBLIC_`) and will be exposed to the browser.
+  </Warning>
+</ParamField>
+
+<ParamField path="NEXT_PUBLIC_POSTHOG_HOST" type="string">
+  PostHog API host URL for event ingestion.
+  
+  **Example:**
+  ```bash
+  NEXT_PUBLIC_POSTHOG_HOST=https://ph.tonysantana.dev
+  ```
+  
+  <Note>
+  You can use PostHog's default host (`https://app.posthog.com`) or a custom proxy URL to avoid ad blockers.
+  </Note>
+</ParamField>
+
+<ParamField path="NEXT_PUBLIC_POSTHOG_UI_HOST" type="string">
+  PostHog UI host URL for dashboard and recordings.
+  
+  **Example:**
+  ```bash
+  NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.i.posthog.com
+  ```
+  
+  Use the appropriate region:
+  - US: `https://us.i.posthog.com`
+  - EU: `https://eu.i.posthog.com`
+</ParamField>
+
+## Vercel-Specific Variables
+
+These variables are automatically set by Vercel and don't need manual configuration.
+
+<ParamField path="VERCEL_ENV" type="string" default="auto">
+  Automatically set by Vercel to indicate the deployment environment.
+  
+  **Values:**
+  - `production` - Production deployment
+  - `preview` - Preview deployment (pull requests)
+  - `development` - Local development
+  
+  Referenced in `src/lib/pdf-config.ts:4` and `src/app/api/export/pdf/route.ts:17` for environment detection.
+</ParamField>
+
+<ParamField path="AWS_LAMBDA_FUNCTION_NAME" type="string" default="auto">
+  Automatically set when running in AWS Lambda (used by Vercel serverless functions).
+  
+  Used in `src/lib/pdf-config.ts:4` to detect serverless environments.
+</ParamField>
+
+## Example Configuration
+
+Here's a complete example `.env.local` file:
+
+<CodeGroup>
+```bash .env.local
+# Core Application
+APP_URL=https://www.tonysantana.dev
+
+# Registry Configuration
+REGISTRY_NAMESPACE=@tonysantana
+REGISTRY_NAMESPACE_URL=https://www.tonysantana.dev/r/{name}.json
+
+# External Services
+GITHUB_API_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_DMCA_URL=https://www.dmca.com/Protection/Status.aspx?ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+ADS_TXT="google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0"
+
+# Analytics & Tracking
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_POSTHOG_HOST=https://ph.tonysantana.dev
+NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.i.posthog.com
+```
+
+```bash .env.production
+# Production environment variables
+APP_URL=https://www.tonysantana.dev
+REGISTRY_NAMESPACE=@tonysantana
+REGISTRY_NAMESPACE_URL=https://www.tonysantana.dev/r/{name}.json
+
+# Production-only variables
+GITHUB_API_TOKEN=ghp_prod_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_POSTHOG_KEY=phc_prod_xxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+</CodeGroup>
+
+## Security Best Practices
+
+<Steps>
+  <Step title="Never Commit Secrets">
+    Ensure `.env.local` and `.env.production` are in your `.gitignore` file.
+  </Step>
+  
+  <Step title="Use Different Keys Per Environment">
+    Use separate API keys for development and production environments.
+  </Step>
+  
+  <Step title="Rotate Tokens Regularly">
+    Periodically rotate GitHub tokens and other API credentials.
+  </Step>
+  
+  <Step title="Limit Token Permissions">
+    Grant only the minimum required permissions to API tokens.
+  </Step>
+  
+  <Step title="Use Vercel Environment Variables">
+    Store production secrets in Vercel's encrypted environment variable system.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Environment Variables Not Loading
+
+If your environment variables aren't being recognized:
+
+1. Restart your development server after changing `.env.local`
+2. Verify the file is named exactly `.env.local` (not `.env.local.txt`)
+3. Ensure variables don't have quotes unless the value contains spaces
+4. Check that `NEXT_PUBLIC_` prefix is used for client-side variables
+
+### PostHog Not Tracking Events
+
+If analytics aren't working:
+
+1. Verify all three PostHog variables are set correctly
+2. Check browser console for initialization errors
+3. Confirm PostHog is only initialized in production (see `src/instrumentation-client.ts`)
+4. Test in production mode: `pnpm build && pnpm start`
+
+### GitHub API Rate Limiting
+
+If you're hitting GitHub rate limits:
+
+1. Verify `GITHUB_API_TOKEN` is set and valid
+2. Check token hasn't expired at [GitHub Tokens](https://github.com/settings/tokens)
+3. Consider implementing caching for GitHub API responses
+4. Monitor usage in GitHub Settings > Developer settings
+
+<Note>
+For deployment-specific environment variable configuration, see the [Vercel Deployment](/deployment/vercel) guide.
+</Note>

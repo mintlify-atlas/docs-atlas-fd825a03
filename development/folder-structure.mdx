@@ -1,0 +1,417 @@
+---
+title: Folder Structure
+description: Complete directory structure and file organization patterns for the Tony Santana Portfolio project.
+---
+
+Understand the project's directory structure and learn how files are organized in this Next.js portfolio template.
+
+## Overview
+
+The project uses Next.js App Router with a feature-based architecture:
+
+```
+project-root/
+├── src/                    # Source code
+├── public/                 # Static assets
+├── packages/              # Publishable packages
+└── configuration files    # Project config
+```
+
+## Root Directory
+
+```
+.
+├── .next/                 # Next.js build output (auto-generated)
+├── node_modules/          # Dependencies
+├── public/                # Static assets served from /
+├── src/                   # Application source code
+├── packages/              # Publishable component packages
+├── .env.example           # Environment variable template
+├── .env.local             # Local environment variables (gitignored)
+├── .gitignore             # Git ignore rules
+├── AGENTS.md              # AI agent guidelines
+├── biome.json             # Biome linter/formatter config
+├── components.json        # shadcn/ui configuration
+├── next.config.mjs        # Next.js configuration
+├── package.json           # Dependencies and scripts
+├── pnpm-lock.yaml         # Lock file for pnpm
+├── postcss.config.mjs     # PostCSS configuration
+├── tailwind.config.ts     # Tailwind CSS configuration
+└── tsconfig.json          # TypeScript configuration
+```
+
+## Source Directory (`src/`)
+
+The `src/` directory contains all application code:
+
+```
+src/
+├── app/                   # Next.js App Router pages
+├── components/            # Shared UI components
+├── config/                # Configuration files
+├── content/               # Static content
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility libraries
+├── providers/             # React context providers
+├── services/              # API and external services
+├── styles/                # Global styles
+├── theme/                 # Theme configuration
+└── types/                 # TypeScript type definitions
+```
+
+### App Directory (`src/app/`)
+
+Next.js App Router structure with route groups:
+
+```
+app/
+├── (app)/                 # Main application routes
+│   ├── (root)/           # Homepage route
+│   │   ├── _components/  # Page-specific components
+│   │   └── page.tsx      # Homepage
+│   ├── (docs)/           # Documentation routes
+│   │   ├── blog/         # Blog section
+│   │   │   ├── [slug]/   # Dynamic blog post pages
+│   │   │   ├── rss/      # RSS feed generation
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx  # Blog listing
+│   │   │   └── not-found.tsx
+│   │   └── resume/       # Resume section
+│   │       └── [slug]/   # Dynamic resume pages
+│   └── layout.tsx        # App layout wrapper
+├── (llms)/               # AI/LLM accessible routes
+│   ├── about.md         # Markdown content for AI
+│   ├── blog.mdx         # Blog content for AI
+│   ├── cv.mdx           # CV content for AI
+│   └── llms.txt         # AI agent instructions
+├── api/                  # API routes
+│   └── export/          # Export endpoints (PDF, Word)
+│       ├── pdf/
+│       └── word/
+├── og/                   # Open Graph image generation
+├── print/                # Print-friendly pages
+├── offline/              # PWA offline page
+├── layout.tsx            # Root layout
+├── error.tsx             # Error boundary
+├── not-found.tsx         # 404 page
+└── ads.txt               # Ads.txt file
+```
+
+<Note>
+  Route groups `(app)`, `(docs)`, and `(llms)` organize routes without affecting the URL structure. For example, `app/(app)/(root)/page.tsx` renders at `/`.
+</Note>
+
+### Components (`src/components/`)
+
+Shared UI components organized by category:
+
+```
+components/
+├── ui/                    # Base UI components (shadcn/ui)
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── dialog.tsx
+│   └── ...
+├── layout/               # Layout components
+│   ├── header.tsx
+│   ├── footer.tsx
+│   └── nav.tsx
+├── mdx/                  # MDX components
+│   ├── code-block.tsx
+│   └── callout.tsx
+└── shared/               # Other shared components
+```
+
+### Configuration (`src/config/`)
+
+Centralized configuration files:
+
+```
+config/
+├── site.ts               # Site metadata, navigation
+└── registry.ts           # Component registry config
+```
+
+Example from `site.ts`:
+
+```typescript
+export const siteConfig = {
+  name: "Tony Santana",
+  url: "https://tonysantana.dev",
+  description: "Portfolio and blog",
+  // ...
+};
+```
+
+### Content (`src/content/`)
+
+Blog posts and other content:
+
+```
+content/
+├── blog/                 # Blog posts (MDX)
+│   ├── post-1.mdx
+│   ├── post-2.mdx
+│   └── ...
+└── portfolio/            # Portfolio data
+    ├── data/
+    │   ├── user.ts       # User information
+    │   ├── projects.ts   # Project data
+    │   ├── experiences.ts # Work experience
+    │   └── ...
+    └── types.ts          # Portfolio types
+```
+
+### Hooks (`src/hooks/`)
+
+Custom React hooks:
+
+```
+hooks/
+├── use-theme.ts          # Theme management
+├── use-mounted.ts        # Client-side mount detection
+└── use-media-query.ts    # Responsive breakpoints
+```
+
+### Libraries (`src/lib/`)
+
+Utility functions and helpers:
+
+```
+lib/
+├── utils.ts              # General utilities (cn, etc.)
+├── blog.ts               # Blog utilities
+├── events.ts             # Analytics event tracking
+├── github.ts             # GitHub API integration
+└── ...
+```
+
+Example utility:
+
+```typescript
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+### Providers (`src/providers/`)
+
+React context providers:
+
+```
+providers/
+├── theme-provider.tsx    # Theme context
+└── analytics-provider.tsx # Analytics wrapper
+```
+
+### Services (`src/services/`)
+
+External API integrations:
+
+```
+services/
+├── github/               # GitHub API service
+└── analytics/            # Analytics service
+```
+
+### Styles (`src/styles/`)
+
+Global styles and CSS:
+
+```
+styles/
+└── globals.css           # Global styles, Tailwind imports
+```
+
+### Theme (`src/theme/`)
+
+Theme configuration:
+
+```
+theme/
+└── colors.ts             # Color definitions
+```
+
+### Types (`src/types/`)
+
+Global TypeScript types:
+
+```
+types/
+├── blog.ts               # Blog-related types
+├── portfolio.ts          # Portfolio types
+└── index.ts              # Type exports
+```
+
+## Public Directory
+
+Static assets served directly:
+
+```
+public/
+├── images/               # Image assets
+├── fonts/                # Custom fonts
+├── icons/                # Icon files
+├── r/                    # Registry files (auto-generated)
+├── favicon.ico           # Favicon
+├── robots.txt            # SEO robots file
+├── sitemap.xml           # Sitemap (auto-generated)
+└── sw.js                 # Service worker (PWA)
+```
+
+<Warning>
+  Never edit files in `public/r/` - these are auto-generated by the registry build process.
+</Warning>
+
+## File Organization Patterns
+
+### Page Components
+
+Page-specific components use the `_components` directory:
+
+```
+app/(app)/(root)/
+├── _components/          # Components used only on homepage
+│   ├── profile-header.tsx
+│   ├── projects/
+│   │   ├── index.tsx
+│   │   └── project-item.tsx
+│   └── experiences/
+│       ├── index.tsx
+│       └── experience-item.tsx
+└── page.tsx              # Homepage
+```
+
+<Tip>
+  The `_components` convention (prefixed with underscore) prevents Next.js from treating these directories as routes.
+</Tip>
+
+### Feature Modules
+
+Related functionality grouped together:
+
+```
+content/portfolio/
+├── data/                 # Data files
+│   ├── user.ts
+│   ├── projects.ts
+│   └── experiences.ts
+├── types.ts              # Type definitions
+└── utils.ts              # Helper functions
+```
+
+### Component Colocation
+
+Components with related files:
+
+```
+components/ui/button/
+├── button.tsx            # Main component
+├── button.test.tsx       # Tests
+├── button.stories.tsx    # Storybook stories
+└── index.ts              # Exports
+```
+
+## Routing Structure
+
+App Router file-based routing:
+
+| File Path | URL | Description |
+|-----------|-----|-------------|
+| `app/(app)/(root)/page.tsx` | `/` | Homepage |
+| `app/(app)/(docs)/blog/page.tsx` | `/blog` | Blog listing |
+| `app/(app)/(docs)/blog/[slug]/page.tsx` | `/blog/post-name` | Blog post |
+| `app/(app)/(docs)/resume/[slug]/page.tsx` | `/resume/full` | Resume page |
+| `app/api/export/pdf/route.ts` | `/api/export/pdf` | PDF export API |
+
+### Special Files
+
+- `layout.tsx` - Shared layout wrapper
+- `page.tsx` - Page component
+- `loading.tsx` - Loading UI
+- `error.tsx` - Error boundary
+- `not-found.tsx` - 404 page
+- `route.ts` - API route handler
+
+## Auto-generated Files
+
+<Warning>
+  **Never edit** these auto-generated files:
+  
+  - `src/__registry__/` - Registry component exports
+  - `public/r/` - Registry JSON files
+  - `.next/` - Next.js build output
+</Warning>
+
+These files are generated by:
+- Component registry build process
+- Next.js build process
+- Other automated tools
+
+## Best Practices
+
+<Steps>
+  <Step title="Keep related files together">
+    Group files by feature rather than type:
+
+    ```
+    # Good
+    features/blog/
+    ├── components/
+    ├── hooks/
+    └── utils/
+
+    # Avoid
+    components/blog/
+    hooks/blog/
+    utils/blog/
+    ```
+  </Step>
+
+  <Step title="Use index files for exports">
+    Export multiple items from a directory:
+
+    ```typescript
+    // features/blog/index.ts
+    export { BlogList } from "./components/blog-list";
+    export { useBlogSearch } from "./hooks/use-blog-search";
+    export { formatPost } from "./utils";
+    ```
+  </Step>
+
+  <Step title="Follow naming conventions">
+    - **Components**: PascalCase - `ProfileHeader.tsx`
+    - **Utilities**: kebab-case - `format-date.ts`
+    - **Hooks**: camelCase with `use` prefix - `useTheme.ts`
+    - **Types**: PascalCase - `BlogPost.ts`
+  </Step>
+
+  <Step title="Use path aliases">
+    Import with `@/` instead of relative paths:
+
+    ```typescript
+    import { cn } from "@/lib/utils";
+    import { Button } from "@/components/ui/button";
+    ```
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Getting Started" icon="rocket" href="/development/getting-started">
+    Set up your local development environment
+  </Card>
+  <Card title="Code Standards" icon="code" href="/development/code-standards">
+    Learn about TypeScript and code quality standards
+  </Card>
+  <Card title="Component Registry" icon="box" href="/features/component-registry">
+    Explore the component registry system
+  </Card>
+  <Card title="Routing" icon="route" href="/features/routing">
+    Understand Next.js App Router patterns
+  </Card>
+</CardGroup>

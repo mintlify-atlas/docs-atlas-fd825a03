@@ -1,0 +1,358 @@
+---
+title: GitHub Integration
+description: Display GitHub contribution graphs and repository information using the GitHub API
+---
+
+The Tony Santana Portfolio integrates with GitHub to display contribution graphs and repository information, showcasing your development activity and open source contributions.
+
+## Overview
+
+The GitHub integration fetches contribution data using the GitHub Contributions API and displays it as an interactive contribution graph on your portfolio.
+
+## Configuration
+
+To enable GitHub integration, configure your GitHub username in the profile:
+
+### Profile Setup
+
+Edit `src/content/profile.ts` and set your GitHub username:
+
+```typescript
+export const PROFILE = {
+  // ... other profile fields
+  githubUserName: "tonysantana1492",
+  // ... rest of profile
+};
+```
+
+### Profile Type Definition
+
+From `src/content/profile.ts:154`:
+
+```typescript
+type Profile = {
+  // ... other fields
+  githubUserName: string;
+  // ... other fields
+};
+```
+
+## Contribution Graph
+
+The contribution graph displays your GitHub activity over the past year.
+
+### Implementation
+
+The contribution data is fetched from `src/content/github-contributions.ts:8`:
+
+```typescript
+import type { Activity } from "@/components/shared/contribution-graph";
+import { PROFILE } from "@/content/profile";
+
+type GitHubContributionsResponse = {
+  contributions: Activity[];
+};
+
+export async function getGitHubContributions() {
+  const res = await fetch(
+    `https://github-contributions-api.jogruber.de/v4/${PROFILE.githubUserName}?y=last`,
+    {
+      next: { revalidate: 86400 }, // Cache for 1 day (86400 seconds)
+    }
+  );
+  const data = (await res.json()) as GitHubContributionsResponse;
+
+  return data.contributions;
+}
+```
+
+### API Endpoint
+
+The integration uses the public GitHub Contributions API:
+
+```
+https://github-contributions-api.jogruber.de/v4/{username}?y=last
+```
+
+**Query Parameters:**
+- `{username}` - Your GitHub username
+- `?y=last` - Fetch contributions from the last year
+
+<Note>
+  This is a third-party API that provides contribution data without requiring authentication.
+</Note>
+
+### Caching Strategy
+
+Contribution data is cached for performance:
+
+```typescript
+{
+  next: { revalidate: 86400 } // Cache for 24 hours
+}
+```
+
+This reduces API calls and improves page load times while keeping data reasonably fresh.
+
+## Activity Data Structure
+
+The API returns an array of activity objects:
+
+```typescript
+type Activity = {
+  date: string;           // ISO date string (YYYY-MM-DD)
+  count: number;          // Number of contributions
+  level: 0 | 1 | 2 | 3 | 4; // Contribution intensity level
+};
+```
+
+### Example Response
+
+```json
+{
+  "contributions": [
+    {
+      "date": "2025-03-04",
+      "count": 12,
+      "level": 3
+    },
+    {
+      "date": "2025-03-03",
+      "count": 5,
+      "level": 2
+    }
+  ]
+}
+```
+
+### Contribution Levels
+
+- `level: 0` - No contributions
+- `level: 1` - Low activity (1-3 contributions)
+- `level: 2` - Moderate activity (4-6 contributions)
+- `level: 3` - High activity (7-9 contributions)
+- `level: 4` - Very high activity (10+ contributions)
+
+## Using the Contribution Graph Component
+
+To display the contribution graph in your portfolio:
+
+```tsx
+import { ContributionGraph } from "@/components/shared/contribution-graph";
+import { getGitHubContributions } from "@/content/github-contributions";
+
+export default async function ProfilePage() {
+  const contributions = await getGitHubContributions();
+
+  return (
+    <div>
+      <h2>GitHub Contributions</h2>
+      <ContributionGraph data={contributions} />
+    </div>
+  );
+}
+```
+
+<Tip>
+  The component is server-side rendered for optimal performance and SEO.
+</Tip>
+
+## GitHub Links in Profile
+
+Your GitHub profile is also linked throughout the portfolio:
+
+### Social Links
+
+From `src/content/profile.ts:720`:
+
+```typescript
+socialLinks: [
+  {
+    icon: "/images/link-icons/github.webp",
+    label: "GitHub",
+    href: "https://github.com/tonysantana1492",
+  },
+  // ... other social links
+]
+```
+
+### Repository Links
+
+Projects can link to GitHub repositories:
+
+```typescript
+projects: [
+  {
+    title: "Portfolio",
+    link: "https://github.com/tonysantana1492/portfolio",
+    // ... other fields
+  }
+]
+```
+
+## Resume Integration
+
+GitHub username is automatically included in generated resumes:
+
+From `src/lib/cv-to-mdx.ts:80`:
+
+```typescript
+if (profile.githubUserName)
+  contactInfo.push(
+    `[${profile.githubUserName.replace(
+      "_",
+      "\\_"
+    )}](https://github.com/${profile.githubUserName})`
+  );
+```
+
+This generates a clickable GitHub link in your resume:
+
+```markdown
+[tonysantana1492](https://github.com/tonysantana1492)
+```
+
+## GitHub API Token (Optional)
+
+For advanced features or higher rate limits, you can configure a GitHub Personal Access Token.
+
+### Environment Variable
+
+Set the `GITHUB_API_TOKEN` in your environment:
+
+```bash
+GITHUB_API_TOKEN=ghp_your_token_here
+```
+
+### Getting a Token
+
+<Steps>
+  <Step title="Visit GitHub Settings">
+    Go to [GitHub Settings > Tokens](https://github.com/settings/tokens)
+  </Step>
+
+  <Step title="Generate new token">
+    Click "Generate new token (classic)"
+  </Step>
+
+  <Step title="Set permissions">
+    For basic contribution data, no special scopes are needed.
+
+    For repository information, select:
+    - `public_repo` - Access public repositories
+  </Step>
+
+  <Step title="Copy token">
+    Copy the generated token and add it to your `.env.local` file
+  </Step>
+</Steps>
+
+<Note>
+  The contribution graph API doesn't require authentication. The token is only needed for features like repository stars, detailed commit information, or higher rate limits.
+</Note>
+
+## Features
+
+<Accordion title="Contribution Heatmap">
+  Visual representation of your GitHub activity over the past year with color-coded intensity levels.
+</Accordion>
+
+<Accordion title="Automatic Updates">
+  Contribution data refreshes daily via cache revalidation.
+</Accordion>
+
+<Accordion title="No Authentication Required">
+  Uses public API endpoint that doesn't require GitHub authentication for basic contribution data.
+</Accordion>
+
+<Accordion title="Performance Optimized">
+  24-hour caching reduces API calls and improves page load speed.
+</Accordion>
+
+<Accordion title="Resume Integration">
+  GitHub username automatically included in generated resumes.
+</Accordion>
+
+## Customization
+
+### Change Time Range
+
+Modify the API query to fetch different time ranges:
+
+```typescript
+// Last year (default)
+`https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+
+// Specific year
+`https://github-contributions-api.jogruber.de/v4/${username}?y=2024`
+
+// All years
+`https://github-contributions-api.jogruber.de/v4/${username}`
+```
+
+### Adjust Cache Duration
+
+Change the revalidation period:
+
+```typescript
+{
+  next: { revalidate: 3600 }  // 1 hour
+}
+
+{
+  next: { revalidate: 43200 }  // 12 hours
+}
+
+{
+  next: { revalidate: 86400 }  // 24 hours (default)
+}
+```
+
+## Troubleshooting
+
+<Steps>
+  <Step title="No data showing">
+    Verify your `githubUserName` is correctly set in `src/content/profile.ts`
+  </Step>
+
+  <Step title="API rate limiting">
+    The public API has rate limits. If exceeded, add a `GITHUB_API_TOKEN` environment variable.
+  </Step>
+
+  <Step title="Stale data">
+    Clear Next.js cache:
+
+    ```bash
+    rm -rf .next/cache
+    pnpm dev
+    ```
+  </Step>
+
+  <Step title="Build errors">
+    Ensure the API is accessible during build time. Consider using static fallback data.
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Steps>
+  <Step title="Keep username updated">
+    If you change your GitHub username, update it in `src/content/profile.ts`
+  </Step>
+
+  <Step title="Monitor API usage">
+    The free API has rate limits. Consider caching or using authenticated requests for high-traffic sites.
+  </Step>
+
+  <Step title="Provide fallback">
+    Handle API failures gracefully with fallback UI or cached data.
+  </Step>
+
+  <Step title="Test contribution graph">
+    Verify the graph displays correctly across different devices and screen sizes.
+  </Step>
+</Steps>
+
+<Tip>
+  The contribution graph is a great way to demonstrate consistent coding activity and open source involvement to potential employers or clients.
+</Tip>

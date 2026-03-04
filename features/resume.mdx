@@ -1,0 +1,386 @@
+---
+title: Resume Generation
+description: Create and export professional resumes with MDX formatting and PDF export functionality
+---
+
+The Tony Santana Portfolio includes a resume generation system that creates beautiful, professional resumes from MDX files with built-in PDF export functionality.
+
+## Overview
+
+Resumes are stored as MDX files in `src/content/resume/` and rendered at `/resume/[slug]` URLs. The system supports rich formatting, custom styling, and PDF export.
+
+## Creating a Resume
+
+<Steps>
+  <Step title="Create MDX file">
+    Create a new resume file in `src/content/resume/`:
+
+    ```bash
+    touch src/content/resume/your-name.mdx
+    ```
+
+    The filename becomes the URL slug: `/resume/your-name`
+  </Step>
+
+  <Step title="Add frontmatter">
+    Add metadata at the top of your resume file:
+
+    ```mdx
+    ---
+    title: Tony Santana
+    description: Curriculum Vitae of Tony Santana
+    createdAt: 2025-09-20
+    updatedAt: 2025-09-20
+    image: images/resume/tony-santana-cv.webp
+    ---
+    ```
+  </Step>
+
+  <Step title="Write resume content">
+    Use MDX to structure your resume with headings, lists, and custom components:
+
+    ```mdx
+    <h1 className="text-center pt-2">Your Name</h1>
+
+    <center>
+      **Job Title | Specialization**
+    </center>
+
+    ## Summary
+
+    Your professional summary here...
+
+    ## Experience
+
+    ### Company Name
+
+    **Position** · Start Date – End Date
+
+    - Achievement or responsibility
+    - Another achievement
+    ```
+  </Step>
+</Steps>
+
+## Resume Structure
+
+Here's the recommended structure from `src/content/resume/tony-santana.mdx:1`:
+
+```mdx
+---
+title: Tony Santana
+description: Curriculum Vitae of Tony Santana
+createdAt: 2025-09-20
+updatedAt: 2025-09-20
+image: images/resume/tony-santana-cv.webp
+---
+
+<h1 className="text-center pt-2">Tony Santana</h1>
+
+<center>
+  **Senior Software Engineer | Project Manager | Full Stack Developer**
+</center>
+
+<center>
+  <a href="https://linkedin.com/in/tonysantana1492">
+    linkedin.com/in/tonysantana1492
+  </a>{" "}
+  <a href="tel:+17867357749">+1 786-735-7749</a>{" "}
+  <a href="https://github.com/tonysantana1492">github.com/tonysantana1492</a>{" "}
+  <a href="mailto:tonysantana1492@gmail.com">tonysantana1492@gmail.com</a>
+</center>
+
+## Summary
+
+Senior Full Stack Software Engineer with 7 years of experience...
+
+## Education
+
+**Bachelor: Telecommunications and Electronics Engineer**  
+_Sep 2011 – Jun 2016_  
+University Name, Location
+
+## Experience
+
+### Company Name
+
+**Position** · Start Date – Present
+
+- Key achievement or responsibility
+- Technologies used: React, Node.js, etc.
+
+## Skills
+
+<div className="grid grid-cols-2 gap-6">
+  <div>
+    #### Programming Languages
+    - _Typescript, Javascript_
+
+    #### Backend Development
+    - _NodeJS, NestJS, Express_
+  </div>
+
+  <div>
+    #### Frontend Development
+    - _NextJS, React, VueJS_
+
+    #### Cloud Technologies
+    - _AWS, GCP, Vercel_
+  </div>
+</div>
+```
+
+## Accessing Resumes
+
+Resumes are accessible via the `/resume/[slug]` route. The page component is defined in `src/app/(app)/(docs)/resume/[slug]/page.tsx:93`:
+
+```typescript
+export default async function Page({
+  params,
+}: {
+  params: Promise<{
+    slug: string;
+  }>
+}) {
+  const { slug } = await params;
+  const cv = getCvBySlug(slug);
+
+  if (!cv) {
+    notFound();
+  }
+
+  const mdx = cvToMdx(PROFILE);
+
+  return (
+    <>
+      <Prose className="px-4 xl:px-16">
+        <div id="mdx-print-root">
+          <MDX code={mdx} />
+        </div>
+      </Prose>
+    </>
+  );
+}
+```
+
+### URL Pattern
+
+```
+https://yoursite.com/resume/tony-santana
+```
+
+The slug corresponds to the filename without extension.
+
+## PDF Export
+
+The resume page includes a built-in PDF export button powered by the `ExportButton` component.
+
+### Export Button Implementation
+
+From `src/app/(app)/(docs)/resume/[slug]/_components/export-button.tsx:31`:
+
+```typescript
+const downloadAsPdf = async () => {
+  if (isLoading) return;
+
+  setIsLoading(true);
+
+  try {
+    const toastId = toast.loading("Exporting PDF...");
+
+    if (!slug) {
+      throw new Error("No document slug provided");
+    }
+
+    const element = document.createElement("a");
+    element.href = `/tony-santana.pdf`;
+    element.download = `${fileName}.pdf`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+
+    toast.success("PDF ready and downloaded", {
+      id: toastId,
+      description: fileName,
+    });
+  } catch (error) {
+    console.error("PDF export error:", error);
+    toast.error("Export failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
+```
+
+### Usage
+
+<Steps>
+  <Step title="Click export button">
+    Click the download icon in the top-right corner of the resume page.
+  </Step>
+
+  <Step title="PDF generation">
+    The system generates a PDF from the rendered resume content.
+  </Step>
+
+  <Step title="Download">
+    The PDF downloads automatically with the filename `{title}.pdf`.
+  </Step>
+</Steps>
+
+<Note>
+  The PDF export preserves the visual styling and formatting of your resume.
+</Note>
+
+## Resume Metadata
+
+The resume system generates comprehensive metadata for SEO:
+
+```typescript
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const slug = (await params).slug;
+  const cv = getCvBySlug(slug);
+
+  if (!cv) {
+    return notFound();
+  }
+
+  const { title, description, image, createdAt, updatedAt } = cv.metadata;
+  const cvUrl = getCvUrl(cv);
+  const ogImage = image || `/og/simple?title=${encodeURIComponent(title)}`;
+
+  return {
+    title: "Resume",
+    description,
+    openGraph: {
+      url: cvUrl,
+      type: "article",
+      images: {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: title,
+      },
+    },
+  };
+}
+```
+
+## Dynamic Resume Generation
+
+The system can also generate resumes dynamically from profile data using the `cvToMdx()` function:
+
+```typescript
+import { cvToMdx } from "@/lib/cv-to-mdx";
+import { PROFILE } from "@/content/profile";
+
+const mdx = cvToMdx(PROFILE);
+```
+
+This converts profile information into MDX format automatically.
+
+## Styling Tips
+
+### Two-Column Layout
+
+Use grid layouts for skills sections:
+
+```mdx
+<div className="grid grid-cols-2 gap-6">
+  <div>
+    #### Left Column
+    - Content here
+  </div>
+
+  <div>
+    #### Right Column
+    - Content here
+  </div>
+</div>
+```
+
+### Centered Content
+
+Center contact information or headers:
+
+```mdx
+<center>
+  **Job Title | Specialization**
+</center>
+```
+
+### Custom Styling
+
+Apply Tailwind classes to MDX elements:
+
+```mdx
+<h1 className="text-center pt-2">Your Name</h1>
+
+<div className="summary-section">
+  Your professional summary with custom styling...
+</div>
+```
+
+## Features
+
+<Accordion title="PDF Export">
+  One-click PDF export with preserved formatting and styling.
+</Accordion>
+
+<Accordion title="Responsive Design">
+  Resumes are fully responsive and look great on all devices.
+</Accordion>
+
+<Accordion title="SEO Optimized">
+  Automatic meta tags, OG images, and structured data generation.
+</Accordion>
+
+<Accordion title="Print Friendly">
+  Optimized for printing with clean layouts and proper page breaks.
+</Accordion>
+
+<Accordion title="Share Options">
+  Built-in sharing menu for distributing your resume.
+</Accordion>
+
+## Navigation
+
+The resume page includes:
+
+- Back button to home
+- PDF export button
+- LLM copy options (for AI agents)
+- Share menu
+- Markdown view (append `.mdx` to URL)
+
+## Best Practices
+
+<Steps>
+  <Step title="Keep it concise">
+    Aim for 1-2 pages. Focus on relevant experience and achievements.
+  </Step>
+
+  <Step title="Use action verbs">
+    Start bullet points with strong action verbs: "Led," "Designed," "Implemented."
+  </Step>
+
+  <Step title="Quantify achievements">
+    Include numbers and percentages: "Increased performance by 70%."
+  </Step>
+
+  <Step title="Update regularly">
+    Keep your resume current by updating the `updatedAt` field when making changes.
+  </Step>
+
+  <Step title="Test PDF export">
+    Always test the PDF export to ensure proper formatting and completeness.
+  </Step>
+</Steps>
+
+<Tip>
+  Store a pre-generated PDF in `/public/` for instant downloads without server-side rendering.
+</Tip>

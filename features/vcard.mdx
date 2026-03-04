@@ -1,0 +1,354 @@
+---
+title: vCard Generation
+description: Generate and download digital contact cards with encoded personal information
+---
+
+The Tony Santana Portfolio includes automatic vCard generation at the `/vcard` endpoint, allowing visitors to easily add your contact information to their address books.
+
+## Overview
+
+vCards (Virtual Contact Files) are standardized digital business cards that can be imported into contact management applications. The portfolio automatically generates a vCard from your profile information with support for photos, contact details, and job information.
+
+## Accessing the vCard
+
+The vCard is available at:
+
+```
+https://yoursite.com/vcard
+```
+
+Visiting this URL automatically downloads a `contact.vcf` file that can be opened in:
+
+- iOS Contacts
+- Android Contacts
+- Gmail
+- Outlook
+- Apple Mail
+- Other contact management apps
+
+## Implementation
+
+The vCard generation is implemented in `src/app/vcard/route.ts:9`:
+
+```typescript
+import { NextResponse } from "next/server";
+import sharp from "sharp";
+import VCard from "vcard-creator";
+import { PROFILE } from "@/content/profile";
+import { decodeEmail, decodePhoneNumber } from "@/lib/string";
+import { getLastCompany } from "@/services/experience";
+
+export async function GET() {
+  const card = new VCard();
+
+  card
+    .addName(PROFILE.lastName, PROFILE.firstName)
+    .addPhoneNumber(decodePhoneNumber(PROFILE.phoneNumber))
+    .addAddress(PROFILE.address)
+    .addEmail(decodeEmail(PROFILE.email))
+    .addURL(PROFILE.website);
+
+  const photo = await getVCardPhoto(PROFILE.avatar);
+  if (photo) {
+    card.addPhoto(photo.image, photo.mine);
+  }
+
+  const lastCompany = getLastCompany(PROFILE.sections.experiences?.items ?? []);
+
+  if (lastCompany) {
+    card.addCompany(lastCompany.companyName)
+        .addJobtitle(lastCompany.positions[0].title);
+  }
+
+  return new NextResponse(card.toString(), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/vcard; charset=utf-8",
+      "Content-Disposition": "inline; filename=contact.vcf",
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
+      "X-Robots-Tag": "noindex, nofollow",
+    },
+  });
+}
+```
+
+## vCard Fields
+
+The generated vCard includes:
+
+<Steps>
+  <Step title="Name">
+    First and last name from your profile:
+
+    ```typescript
+    card.addName(PROFILE.lastName, PROFILE.firstName)
+    ```
+  </Step>
+
+  <Step title="Phone Number">
+    Decoded phone number:
+
+    ```typescript
+    card.addPhoneNumber(decodePhoneNumber(PROFILE.phoneNumber))
+    ```
+
+    <Note>
+      Phone numbers are stored encoded in the profile for spam protection.
+    </Note>
+  </Step>
+
+  <Step title="Email Address">
+    Decoded email address:
+
+    ```typescript
+    card.addEmail(decodeEmail(PROFILE.email))
+    ```
+
+    <Note>
+      Email addresses are stored encoded to prevent scraping by spam bots.
+    </Note>
+  </Step>
+
+  <Step title="Physical Address">
+    Your location/address:
+
+    ```typescript
+    card.addAddress(PROFILE.address)
+    ```
+  </Step>
+
+  <Step title="Website URL">
+    Your portfolio website:
+
+    ```typescript
+    card.addURL(PROFILE.website)
+    ```
+  </Step>
+
+  <Step title="Profile Photo">
+    Avatar image converted to JPEG format and base64 encoded:
+
+    ```typescript
+    const photo = await getVCardPhoto(PROFILE.avatar);
+    if (photo) {
+      card.addPhoto(photo.image, photo.mine);
+    }
+    ```
+  </Step>
+
+  <Step title="Company & Job Title">
+    Your current employer and position:
+
+    ```typescript
+    const lastCompany = getLastCompany(PROFILE.sections.experiences?.items ?? []);
+
+    if (lastCompany) {
+      card.addCompany(lastCompany.companyName)
+          .addJobtitle(lastCompany.positions[0].title);
+    }
+    ```
+  </Step>
+</Steps>
+
+## Contact Information Encoding
+
+Email addresses and phone numbers are stored in encoded format to prevent spam bots from harvesting contact information.
+
+### Email Encoding
+
+Emails are base64 encoded in the profile:
+
+```typescript
+import { decodeEmail } from "@/lib/string";
+
+// Profile stores encoded email
+const encodedEmail = "dG9ueXNhbnRhbmExNDkyQGdtYWlsLmNvbQ==";
+
+// Decode when needed
+const email = decodeEmail(encodedEmail);
+// Returns: "tonysantana1492@gmail.com"
+```
+
+### Phone Number Encoding
+
+Phone numbers are also encoded:
+
+```typescript
+import { decodePhoneNumber } from "@/lib/string";
+
+// Profile stores encoded phone
+const encodedPhone = "KzE3ODY3MzU3NzQ5";
+
+// Decode when needed
+const phone = decodePhoneNumber(encodedPhone);
+// Returns: "+17867357749"
+```
+
+<Tip>
+  This encoding prevents automated bots from scraping your contact information while keeping it accessible to legitimate users via vCard download.
+</Tip>
+
+## Photo Processing
+
+Profile photos are automatically converted to JPEG format and optimized for vCard compatibility:
+
+```typescript
+async function getVCardPhoto(url: string) {
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length === 0) {
+      return null;
+    }
+
+    const contentType = res.headers.get("Content-Type") || "";
+    if (!contentType.startsWith("image/")) {
+      return null;
+    }
+
+    const jpegBuffer = await convertImageToJpeg(buffer);
+    const image = jpegBuffer.toString("base64");
+
+    return {
+      image,
+      mine: "jpeg",
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function convertImageToJpeg(imageBuffer: Buffer): Promise<Buffer> {
+  try {
+    const jpegBuffer = await sharp(imageBuffer)
+      .jpeg({
+        quality: 90,
+        progressive: true,
+        mozjpeg: true,
+      })
+      .toBuffer();
+
+    return jpegBuffer;
+  } catch (error) {
+    console.error("Error converting image to JPEG:", error);
+    throw error;
+  }
+}
+```
+
+### Image Conversion Features
+
+- Fetches avatar from URL
+- Validates image format
+- Converts to JPEG using Sharp
+- Optimizes with 90% quality
+- Uses progressive JPEG encoding
+- Base64 encodes for vCard format
+
+## Response Headers
+
+The vCard endpoint returns specific headers for proper handling:
+
+```typescript
+headers: {
+  "Content-Type": "text/vcard; charset=utf-8",
+  "Content-Disposition": "inline; filename=contact.vcf",
+  "Cache-Control": "public, max-age=86400, s-maxage=86400",
+  "X-Robots-Tag": "noindex, nofollow",
+}
+```
+
+<Accordion title="Content-Type">
+  `text/vcard; charset=utf-8` - Identifies the file as a vCard with UTF-8 encoding
+</Accordion>
+
+<Accordion title="Content-Disposition">
+  `inline; filename=contact.vcf` - Suggests the filename when downloaded
+</Accordion>
+
+<Accordion title="Cache-Control">
+  `public, max-age=86400` - Caches the vCard for 24 hours (86400 seconds)
+</Accordion>
+
+<Accordion title="X-Robots-Tag">
+  `noindex, nofollow` - Prevents search engines from indexing the vCard endpoint
+</Accordion>
+
+## Integration
+
+You can link to the vCard from anywhere in your portfolio:
+
+```tsx
+<a href="/vcard" download>
+  Download Contact Card
+</a>
+```
+
+Or create a button:
+
+```tsx
+<Button asChild>
+  <a href="/vcard">
+    <DownloadIcon />
+    Save Contact
+  </a>
+</Button>
+```
+
+## vCard Library
+
+The system uses the `vcard-creator` npm package:
+
+```bash
+pnpm add vcard-creator
+```
+
+And Sharp for image processing:
+
+```bash
+pnpm add sharp
+```
+
+## Updating Contact Information
+
+To update the vCard data, edit your profile configuration:
+
+1. Update profile data in `src/content/profile.ts`
+2. Encode new email/phone if changed
+3. Update avatar URL if changed
+4. Update work experience for job title/company
+
+The vCard will automatically reflect these changes.
+
+## Benefits
+
+<Steps>
+  <Step title="Easy Sharing">
+    Visitors can save your contact info with one click.
+  </Step>
+
+  <Step title="Spam Protection">
+    Encoded contact details prevent bot scraping.
+  </Step>
+
+  <Step title="Professional">
+    Standard vCard format works with all major platforms.
+  </Step>
+
+  <Step title="Automatic Updates">
+    vCard stays in sync with your profile data.
+  </Step>
+
+  <Step title="Photo Included">
+    Avatar helps contacts recognize you visually.
+  </Step>
+</Steps>
+
+<Tip>
+  Test your vCard by downloading it and importing into various contact management apps to ensure compatibility.
+</Tip>

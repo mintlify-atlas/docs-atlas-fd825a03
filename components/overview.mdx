@@ -1,0 +1,132 @@
+---
+title: Components Overview
+description: An introduction to the component system built on shadcn/ui with custom enhancements.
+---
+
+The Tony Santana Portfolio uses a comprehensive component system based on **shadcn/ui**, enhanced with custom components for animations, layouts, and specialized functionality.
+
+## Component Architecture
+
+The component system is organized into three main categories:
+
+<CardGroup cols={3}>
+  <Card title="UI Components" icon="grid" href="/components/ui-components">
+    Core UI primitives built with Radix UI and styled with Tailwind CSS v4
+  </Card>
+  <Card title="Animated Components" icon="sparkles" href="/components/animations">
+    Motion-powered components for interactive animations and effects
+  </Card>
+  <Card title="Shared Components" icon="puzzle" href="/components/ui-components#shared-components">
+    Composite components combining UI primitives for specific use cases
+  </Card>
+</CardGroup>
+
+## Design Principles
+
+All components follow these core principles:
+
+- **Type-safe**: Built with TypeScript and strict type checking
+- **Accessible**: Following WAI-ARIA standards via Radix UI primitives
+- **Composable**: Small, focused components that work together
+- **Customizable**: Easily styled using Tailwind CSS utility classes
+- **Responsive**: Mobile-first design with dark mode support
+
+## Component Location
+
+Components are organized in the following directory structure:
+
+```bash
+src/components/
+├── ui/                    # Core UI components (shadcn/ui based)
+├── shared/                # Composite and specialized components
+├── animated-icons/        # Motion-animated icon components
+├── header/                # Header-specific components
+└── footer/                # Footer-specific components
+```
+
+## Using Components
+
+All components use a consistent API pattern with TypeScript props:
+
+```tsx
+import { Button } from "@/components/ui/button"
+import { Panel, PanelContent, PanelHeader, PanelTitle } from "@/components/ui/panel"
+
+export default function Example() {
+  return (
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>Example Panel</PanelTitle>
+      </PanelHeader>
+      <PanelContent>
+        <p>Your content goes here.</p>
+        <Button variant="default" size="default">
+          Click me
+        </Button>
+      </PanelContent>
+    </Panel>
+  )
+}
+```
+
+## Component Variants
+
+Most components support variants for different visual styles using `class-variance-authority`:
+
+<Tabs>
+  <Tab title="Button Variants">
+    ```tsx
+    <Button variant="default">Default</Button>
+    <Button variant="secondary">Secondary</Button>
+    <Button variant="destructive">Destructive</Button>
+    <Button variant="outline">Outline</Button>
+    <Button variant="ghost">Ghost</Button>
+    <Button variant="link">Link</Button>
+    ```
+  </Tab>
+  <Tab title="Button Sizes">
+    ```tsx
+    <Button size="sm">Small</Button>
+    <Button size="default">Default</Button>
+    <Button size="lg">Large</Button>
+    <Button size="icon">Icon</Button>
+    ```
+  </Tab>
+</Tabs>
+
+## Styling Utilities
+
+All components use the `cn()` utility function for combining Tailwind classes:
+
+```tsx
+import { cn } from "@/lib/utils"
+
+function MyComponent({ className, ...props }) {
+  return (
+    <div
+      className={cn(
+        "base-classes here",
+        "conditional-classes",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+```
+
+This pattern ensures:
+- Base styles are always applied
+- Custom classes can override defaults
+- Type-safe className prop handling
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Explore UI Components" icon="cube" href="/components/ui-components">
+    Learn about buttons, inputs, dialogs, and more
+  </Card>
+  <Card title="Explore Animations" icon="wand-magic-sparkles" href="/components/animations">
+    Discover motion-powered animated components
+  </Card>
+</CardGroup>

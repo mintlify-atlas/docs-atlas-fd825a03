@@ -1,0 +1,233 @@
+---
+title: Installation
+description: Set up the Tony Santana Portfolio project locally with step-by-step installation instructions.
+---
+
+Get started with the Tony Santana Portfolio template by following these installation steps. This Next.js portfolio and blog template is designed to be easy to set up and customize.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed on your system:
+
+<Steps>
+
+<Step title="Node.js">
+  You need Node.js version 20 or higher. Check your current version:
+  
+  ```bash
+  node -v
+  ```
+  
+  <Note>
+    The project is tested with Node.js v24.13.1. Download the latest LTS version from [nodejs.org](https://nodejs.org/).
+  </Note>
+</Step>
+
+<Step title="Package Manager">
+  This project uses **pnpm** as the primary package manager. Install it globally:
+  
+  ```bash
+  npm install -g pnpm
+  ```
+  
+  <Tip>
+    While pnpm is recommended, you can also use npm or yarn. The installation commands are provided for all three package managers.
+  </Tip>
+</Step>
+
+</Steps>
+
+## Installation Steps
+
+<Steps>
+
+<Step title="Clone the Repository">
+  Clone the project repository to your local machine:
+  
+  ```bash
+  git clone https://github.com/tonysantana1492/portfolio.git
+  cd portfolio
+  ```
+</Step>
+
+<Step title="Install Dependencies">
+  Install all project dependencies using your preferred package manager:
+  
+  <CodeGroup>
+    ```bash pnpm
+    pnpm install
+    ```
+    
+    ```bash npm
+    npm install
+    ```
+    
+    ```bash yarn
+    yarn install
+    ```
+  </CodeGroup>
+  
+  <Note>
+    The project includes over 60 dependencies including Next.js 16, React 19, Tailwind CSS v4, and various MDX processing libraries.
+  </Note>
+</Step>
+
+<Step title="Environment Configuration">
+  Create your environment configuration file:
+  
+  ```bash
+  cp .env.example .env.local
+  ```
+  
+  Configure the following environment variables in your `.env.local` file:
+  
+  ```bash .env.local
+  # Application URL
+  APP_URL=http://localhost:3000
+  
+  # Registry Configuration (for shadcn CLI)
+  REGISTRY_NAMESPACE=@yourname
+  REGISTRY_NAMESPACE_URL=https://yourdomain.com/r/{name}.json
+  
+  # Optional: GitHub API Token (for GitHub features)
+  GITHUB_API_TOKEN=your_github_token
+  
+  # Optional: Analytics
+  NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+  NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+  ```
+  
+  <Warning>
+    Never commit your `.env.local` file to version control. It should remain in `.gitignore`.
+  </Warning>
+</Step>
+
+<Step title="Start Development Server">
+  Launch the development server:
+  
+  <CodeGroup>
+    ```bash pnpm
+    pnpm dev
+    ```
+    
+    ```bash npm
+    npm run dev
+    ```
+    
+    ```bash yarn
+    yarn dev
+    ```
+  </CodeGroup>
+  
+  The application will start on `http://localhost:3000` by default.
+  
+  <Tip>
+    The dev server is configured to run on port 3000. You can change this by modifying the `dev` script in `package.json`.
+  </Tip>
+</Step>
+
+<Step title="Verify Installation">
+  Open your browser and navigate to:
+  
+  ```
+  http://localhost:3000
+  ```
+  
+  You should see the portfolio homepage with the default Tony Santana content.
+</Step>
+
+</Steps>
+
+## Additional Setup
+
+### Build for Production
+
+To create an optimized production build:
+
+<CodeGroup>
+  ```bash pnpm
+  pnpm build
+  ```
+  
+  ```bash npm
+  npm run build
+  ```
+  
+  ```bash yarn
+  yarn build
+  ```
+</CodeGroup>
+
+Start the production server:
+
+<CodeGroup>
+  ```bash pnpm
+  pnpm start
+  ```
+  
+  ```bash npm
+  npm start
+  ```
+  
+  ```bash yarn
+  yarn start
+  ```
+</CodeGroup>
+
+### Code Quality Tools
+
+The project uses Biome for linting and formatting:
+
+```bash
+# Run linter and auto-fix issues
+pnpm lint
+
+# Format code
+pnpm format
+```
+
+<Note>
+  Biome replaces ESLint and Prettier, providing faster performance and a unified toolchain.
+</Note>
+
+## Troubleshooting
+
+<Card title="Port Already in Use" icon="warning">
+  If port 3000 is already in use, you can change the port in `package.json`:
+  
+  ```json
+  "scripts": {
+    "dev": "next dev -p 3001"
+  }
+  ```
+</Card>
+
+<Card title="Module Not Found Errors" icon="warning">
+  Clear your node_modules and reinstall:
+  
+  ```bash
+  rm -rf node_modules pnpm-lock.yaml
+  pnpm install
+  ```
+</Card>
+
+<Card title="Build Errors" icon="warning">
+  For detailed build debugging, use:
+  
+  ```bash
+  pnpm build:debug
+  ```
+</Card>
+
+## Next Steps
+
+Now that you have the project installed, you can:
+
+- Review the [Project Structure](/project-structure) to understand the codebase organization
+- Customize your portfolio content in `src/content/profile.ts`
+- Explore the component registry system
+- Deploy to Vercel or your preferred hosting platform
+
+<Tip>
+  Before customizing, familiarize yourself with the project structure and key configuration files.
+</Tip>

@@ -1,0 +1,410 @@
+---
+title: "Theme Styling"
+description: "Customize colors, fonts, and visual styling for your portfolio"
+---
+
+The Tony Santana Portfolio uses Tailwind CSS v4 for styling, with support for light and dark themes. All styling is highly customizable through configuration files and CSS variables.
+
+## Tailwind CSS v4
+
+This project uses the latest Tailwind CSS v4, which brings performance improvements and a new configuration approach.
+
+### Configuration
+
+Tailwind is configured in `tailwind.config.ts`:
+
+```typescript
+import type { Config } from "tailwindcss"
+
+const config: Config = {
+  darkMode: ["class"],
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        // Custom color palette
+      },
+      // ... other customizations
+    },
+  },
+  plugins: [],
+}
+
+export default config
+```
+
+## Color System
+
+### Theme Colors
+
+The site uses CSS variables for colors that adapt to light/dark mode:
+
+```css
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    /* ... more variables */
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    /* ... more variables */
+  }
+}
+```
+
+### Customizing Colors
+
+To customize theme colors, edit `src/styles/globals.css`:
+
+<Steps>
+  <Step title="Open globals.css">
+    Open `src/styles/globals.css` in your editor.
+  </Step>
+  
+  <Step title="Update CSS variables">
+    Modify the color values in both `:root` and `.dark` selectors:
+    
+    ```css
+    :root {
+      --primary: 210 100% 50%; /* Blue in light mode */
+    }
+    
+    .dark {
+      --primary: 210 100% 60%; /* Lighter blue in dark mode */
+    }
+    ```
+    
+    <Note>
+      Colors use HSL format without the `hsl()` function wrapper.
+    </Note>
+  </Step>
+  
+  <Step title="Use in components">
+    Reference the color in your components:
+    
+    ```tsx
+    <div className="bg-primary text-primary-foreground">
+      Primary colored element
+    </div>
+    ```
+  </Step>
+</Steps>
+
+## Typography
+
+### Font Configuration
+
+Fonts are configured in `src/app/layout.tsx` using Next.js Font optimization:
+
+```typescript
+import { Inter } from "next/font/google"
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+})
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={inter.variable}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+### Changing Fonts
+
+To use a different font:
+
+<Steps>
+  <Step title="Import the font">
+    ```typescript
+    import { Roboto } from "next/font/google"
+    
+    const roboto = Roboto({
+      weight: ["400", "700"],
+      subsets: ["latin"],
+      variable: "--font-roboto",
+    })
+    ```
+  </Step>
+  
+  <Step title="Update Tailwind config">
+    Add the font to your Tailwind configuration:
+    
+    ```typescript
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ["var(--font-roboto)"],
+        },
+      },
+    }
+    ```
+  </Step>
+</Steps>
+
+## Dark Mode
+
+### Theme Toggle
+
+The site includes a theme switcher component that allows users to choose between light, dark, and system preference:
+
+```typescript
+import { useTheme } from "next-themes"
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  
+  return (
+    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+      Toggle Theme
+    </button>
+  )
+}
+```
+
+### System Preference
+
+The theme automatically detects and respects the user's system preference:
+
+```typescript
+// In src/providers/theme-provider.tsx
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+
+export function ThemeProvider({ children }) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      {children}
+    </NextThemesProvider>
+  )
+}
+```
+
+### Dark Mode Classes
+
+Use the `dark:` prefix for dark mode styles:
+
+```tsx
+<div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+  Content that adapts to theme
+</div>
+```
+
+## Component Styling
+
+### shadcn/ui Components
+
+The project uses shadcn/ui components which are styled with Tailwind CSS. Component styles can be customized in their respective files in `src/components/ui/`.
+
+#### Button Component Example
+
+```typescript
+// src/components/ui/button.tsx
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 px-3",
+        lg: "h-11 px-8",
+      },
+    },
+  }
+)
+```
+
+### Custom Components
+
+Create custom styled components using Tailwind utilities:
+
+```tsx
+// src/components/custom/card.tsx
+export function Card({ children }) {
+  return (
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      {children}
+    </div>
+  )
+}
+```
+
+## Animations
+
+The project includes custom animations using Framer Motion and Tailwind:
+
+### Tailwind Animations
+
+```css
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+```
+
+Use in components:
+
+```tsx
+<div className="animate-fade-in">
+  Animated content
+</div>
+```
+
+### Framer Motion
+
+For complex animations, use Motion components:
+
+```tsx
+import { motion } from "motion/react"
+
+export function AnimatedCard({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+```
+
+<Tip>
+  See the [Animations](/components/animations) page for more animation examples.
+</Tip>
+
+## Responsive Design
+
+### Breakpoints
+
+Tailwind provides default breakpoints:
+
+- `sm`: 640px
+- `md`: 768px
+- `lg`: 1024px
+- `xl`: 1280px
+- `2xl`: 1536px
+
+Use responsive prefixes:
+
+```tsx
+<div className="text-sm md:text-base lg:text-lg">
+  Responsive text size
+</div>
+```
+
+### Container
+
+Use the container class for consistent max-width:
+
+```tsx
+<div className="container mx-auto px-4">
+  Centered content with padding
+</div>
+```
+
+## Customization Examples
+
+### Change Primary Color
+
+```css
+:root {
+  --primary: 221.2 83.2% 53.3%; /* Blue */
+}
+
+.dark {
+  --primary: 217.2 91.2% 59.8%; /* Lighter blue for dark mode */
+}
+```
+
+### Change Border Radius
+
+```css
+:root {
+  --radius: 0.75rem; /* More rounded */
+}
+```
+
+### Custom Color Palette
+
+Add custom colors to your Tailwind config:
+
+```typescript
+theme: {
+  extend: {
+    colors: {
+      brand: {
+        50: "#f0f9ff",
+        100: "#e0f2fe",
+        // ... more shades
+        900: "#0c4a6e",
+      },
+    },
+  },
+}
+```
+
+## Best Practices
+
+<Accordion title="Use semantic color names">
+  Instead of `bg-blue-500`, use `bg-primary` for better maintainability.
+</Accordion>
+
+<Accordion title="Test both themes">
+  Always test your changes in both light and dark modes to ensure good contrast.
+</Accordion>
+
+<Accordion title="Follow accessibility guidelines">
+  Ensure sufficient color contrast ratios (WCAG AA: 4.5:1 for normal text, 3:1 for large text).
+</Accordion>
+
+<Accordion title="Use CSS variables for theme values">
+  Define theme-related values as CSS variables for easier customization.
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Components" icon="puzzle-piece" href="/components/overview">
+    Explore available UI components
+  </Card>
+  <Card title="Animations" icon="sparkles" href="/components/animations">
+    Learn about animation patterns
+  </Card>
+</CardGroup>

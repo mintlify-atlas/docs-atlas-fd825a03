@@ -1,0 +1,319 @@
+---
+title: "Site Configuration"
+description: "Configure site-wide settings, navigation, PWA options, and metadata"
+---
+
+The site configuration lives in `src/config/site.config.ts` and controls site-wide settings like metadata, navigation, PWA configuration, and social links.
+
+## Site Information
+
+The `SITE_INFO` object contains core metadata about your site:
+
+```typescript
+export const SITE_INFO: ISiteInfo = {
+  name: PROFILE.displayName,
+  url: process.env.APP_URL || "https://www.tonysantana.dev",
+  ogImage: PROFILE.ogImage,
+  description: PROFILE.bio,
+  keywords: PROFILE.keywords.join(", "),
+  icons: [/* PWA icons */],
+  screenshots: [/* PWA screenshots */],
+  metadataIcons: {/* favicon and apple touch icon */}
+}
+```
+
+<ParamField path="name" type="string">
+  Site name, automatically pulled from your profile
+</ParamField>
+
+<ParamField path="url" type="string">
+  Your site URL, set via `APP_URL` environment variable
+</ParamField>
+
+<ParamField path="ogImage" type="string">
+  Default Open Graph image for social sharing
+</ParamField>
+
+<ParamField path="description" type="string">
+  Site description for SEO and social sharing
+</ParamField>
+
+<ParamField path="keywords" type="string">
+  Comma-separated keywords for SEO
+</ParamField>
+
+## Theme Colors
+
+Configure meta theme colors for browser UI:
+
+```typescript
+export const META_THEME_COLORS = {
+  light: "#ffffff",
+  dark: "#09090b"
+}
+```
+
+These colors are used for:
+- Browser address bar on mobile
+- Task switcher UI
+- PWA theme color
+
+## Navigation
+
+The `MAIN_NAV` array defines your primary navigation:
+
+```typescript
+export const MAIN_NAV: INavItem[] = [
+  {
+    title: "Portfolio",
+    href: "/",
+    icon: Logo,
+  },
+  {
+    title: "Resume",
+    href: "/resume/tony-santana",
+    icon: UserStarIcon,
+  },
+  {
+    title: "Blog",
+    href: "/blog",
+    icon: RssIcon,
+  },
+]
+```
+
+### Adding Navigation Items
+
+<Steps>
+  <Step title="Import the icon">
+    Import a Lucide icon component:
+    
+    ```typescript
+    import { BookOpenIcon } from "lucide-react"
+    ```
+  </Step>
+  
+  <Step title="Add the navigation item">
+    Add your item to the `MAIN_NAV` array:
+    
+    ```typescript
+    {
+      title: "Projects",
+      href: "/projects",
+      icon: BookOpenIcon,
+    }
+    ```
+  </Step>
+</Steps>
+
+## PWA Configuration
+
+The `PWA_CONFIG` object configures Progressive Web App features:
+
+```typescript
+export const PWA_CONFIG = {
+  name: SITE_INFO.name,
+  shortName: PROFILE.displayName,
+  description: SITE_INFO.description,
+  themeColor: "#000000",
+  backgroundColor: "#000000",
+  display: "standalone" as const,
+  orientation: "portrait" as const,
+  scope: "/",
+  startUrl: "/?utm_source=pwa",
+  icons: SITE_INFO.icons,
+  screenshots: SITE_INFO.screenshots,
+}
+```
+
+<ParamField path="name" type="string">
+  Full app name shown when installing
+</ParamField>
+
+<ParamField path="shortName" type="string">
+  Short name for home screen icon
+</ParamField>
+
+<ParamField path="display" type="string">
+  Display mode: `standalone`, `fullscreen`, `minimal-ui`, or `browser`
+</ParamField>
+
+<ParamField path="themeColor" type="string">
+  Theme color for browser UI
+</ParamField>
+
+<ParamField path="backgroundColor" type="string">
+  Background color for splash screen
+</ParamField>
+
+### PWA Icons
+
+Add icons for different sizes and purposes:
+
+```typescript
+icons: [
+  {
+    src: "/images/logo.svg",
+    type: "image/svg+xml",
+    sizes: "any",
+    purpose: "any",
+  },
+  {
+    src: "/images/icon-512x512.png",
+    type: "image/png",
+    sizes: "512x512",
+    purpose: "maskable",
+  },
+  {
+    src: "/images/icon-192x192.png",
+    type: "image/png",
+    sizes: "192x192",
+    purpose: "maskable",
+  },
+]
+```
+
+<Note>
+  Place icon files in the `public/images/` directory.
+</Note>
+
+## UTM Parameters
+
+Configure default UTM parameters for analytics:
+
+```typescript
+export const UTM_PARAMS = {
+  utm_source: PROFILE.website,
+  utm_medium: "portfolio_website",
+  utm_campaign: "referral",
+}
+```
+
+These are automatically appended to external links for tracking referral traffic.
+
+## Command Menu Links
+
+The portfolio automatically generates command menu links from your profile sections:
+
+```typescript
+const sections = Object.entries(PROFILE.sections).map(([_key, section]) => section)
+
+const PORTFOLIO_LINKS_FROM_SECTIONS: CommandLinkItem[] = sections.map((section) => ({
+  title: section.name,
+  href: `/#${section.id}`,
+  icon: getIcon(section.icon),
+}))
+
+export const PORTFOLIO_LINKS: CommandLinkItem[] = [
+  ...PORTFOLIO_LINKS_FROM_SECTIONS,
+  {
+    title: "Download vCard",
+    href: "/vcard",
+    icon: CircleUserIcon,
+  },
+]
+```
+
+### Adding Custom Commands
+
+You can add custom commands to the command menu:
+
+```typescript
+export const PORTFOLIO_LINKS: CommandLinkItem[] = [
+  ...PORTFOLIO_LINKS_FROM_SECTIONS,
+  {
+    title: "Download vCard",
+    href: "/vcard",
+    icon: CircleUserIcon,
+  },
+  {
+    title: "View Source Code",
+    href: "https://github.com/tonysantana1492/portfolio",
+    icon: GithubIcon,
+    openInNewTab: true,
+  },
+]
+```
+
+## Social Links
+
+Social links are automatically generated from your profile:
+
+```typescript
+export const SOCIAL_LINK_ITEMS: CommandLinkItem[] =
+  PROFILE.sections.socialLinks?.items.map((item) => ({
+    title: item.title,
+    href: item.href,
+    iconImage: item.icon,
+    openInNewTab: true,
+  })) || []
+```
+
+## Metadata Icons
+
+Configure favicon and apple touch icons:
+
+```typescript
+metadataIcons: {
+  icon: [
+    {
+      url: "/images/favicon.ico",
+      sizes: "180x180",
+    },
+    {
+      url: "/images/favicon.svg",
+      type: "image/svg+xml",
+    },
+  ],
+  apple: {
+    url: "/images/apple-touch-icon.png",
+    type: "image/png",
+    sizes: "180x180",
+  },
+}
+```
+
+<Tip>
+  Use an SVG favicon for resolution independence, with a PNG fallback for older browsers.
+</Tip>
+
+## Example: Full Configuration
+
+```typescript
+import { Logo } from "@/components/header/logo"
+import { getIcon } from "@/components/shared/icons"
+import { PROFILE } from "@/content/profile"
+import { CircleUserIcon, RssIcon, UserStarIcon } from "lucide-react"
+import type { MetadataRoute } from "next"
+
+export const SITE_INFO = {
+  name: "John Doe",
+  url: "https://johndoe.dev",
+  ogImage: "https://johndoe.dev/og-image.png",
+  description: "Full-stack developer specializing in React and Node.js",
+  keywords: "John Doe, Developer, React, Node.js",
+  // ... icons and screenshots
+}
+
+export const MAIN_NAV = [
+  { title: "Home", href: "/", icon: Logo },
+  { title: "Resume", href: "/resume/john-doe", icon: UserStarIcon },
+  { title: "Blog", href: "/blog", icon: RssIcon },
+]
+
+export const META_THEME_COLORS = {
+  light: "#ffffff",
+  dark: "#0f0f0f",
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Profile Data" icon="user" href="/customization/profile-data">
+    Configure your personal information
+  </Card>
+  <Card title="Theme Styling" icon="palette" href="/customization/theme-styling">
+    Customize colors and styling
+  </Card>
+</CardGroup>

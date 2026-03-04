@@ -1,0 +1,324 @@
+---
+title: Blog System
+description: Create and manage blog posts with MDX, featuring syntax highlighting, OG images, and RSS feeds
+---
+
+The Tony Santana Portfolio includes a powerful blog system built with MDX that supports rich content, code syntax highlighting, dynamic OG image generation, and RSS feeds.
+
+## Overview
+
+Blog posts are written in MDX format and stored in the `src/content/blog/` directory. The system automatically processes these files, generates static pages, and creates RSS feeds for content distribution.
+
+## Creating Blog Posts
+
+<Steps>
+  <Step title="Create MDX file">
+    Create a new `.mdx` file in `src/content/blog/` with a descriptive filename:
+
+    ```bash
+    touch src/content/blog/my-new-post.mdx
+    ```
+
+    The filename (without extension) becomes the URL slug: `/blog/my-new-post`
+  </Step>
+
+  <Step title="Add frontmatter">
+    Add frontmatter metadata at the top of your MDX file:
+
+    ```mdx
+    ---
+    title: Welcome to tonysantana.dev
+    description: A minimal portfolio, component registry, and blog to showcase my work as a Software Engineer.
+    image: /images/blog/welcome.webp
+    createdAt: 2025-09-21
+    updatedAt: 2025-09-21
+    ---
+    ```
+  </Step>
+
+  <Step title="Write content">
+    Write your blog content using standard Markdown and MDX syntax:
+
+    ```mdx
+    ## Tech Stack
+
+    - Next.js 15
+    - Tailwind CSS v4
+    - shadcn/ui
+
+    ## Featured
+
+    - Clean & modern design
+    - Light & Dark theme support
+    - vCard integration
+    ```
+  </Step>
+</Steps>
+
+## Frontmatter Options
+
+The blog system supports the following frontmatter fields:
+
+<Accordion title="Required Fields">
+  ```typescript
+  title: string          // Post title displayed in navigation and meta tags
+  description: string    // Post description for SEO and previews
+  createdAt: string     // Creation date (YYYY-MM-DD format)
+  updatedAt: string     // Last updated date (YYYY-MM-DD format)
+  ```
+</Accordion>
+
+<Accordion title="Optional Fields">
+  ```typescript
+  image?: string        // Custom OG image path (e.g., /images/blog/post.webp)
+  category?: string     // Category slug for filtering posts
+  icon?: string         // Lucide icon name for visual representation
+  new?: boolean         // Show "New" badge in post lists
+  pinned?: boolean      // Pin post to top of blog list
+  ```
+</Accordion>
+
+### Field Details
+
+The frontmatter structure is defined in `src/types/post.ts:1`:
+
+```typescript
+export type PostMetadata = {
+  title: string;
+  description: string;
+  image?: string;        // Recommended size: 1200x630
+  category?: string;     // Used for filtering
+  icon?: string;         // Lucide icon name
+  new?: boolean;         // Show "New" badge
+  pinned?: boolean;      // Pin to top
+  createdAt: string;     // ISO date string (YYYY-MM-DD)
+  updatedAt: string;     // ISO date string (YYYY-MM-DD)
+};
+```
+
+<Note>
+  Posts are automatically sorted by creation date (newest first), with pinned posts appearing first.
+</Note>
+
+## OG Image Generation
+
+The blog system automatically generates Open Graph images for social media previews.
+
+### Custom Images
+
+Provide a custom image in the frontmatter:
+
+```mdx
+---
+title: My Blog Post
+image: /images/blog/my-post.webp
+---
+```
+
+### Dynamic Images
+
+If no image is provided, the system generates one dynamically using the post title:
+
+```typescript
+const ogImage = image || `/og/simple?title=${encodeURIComponent(title)}`;
+```
+
+This creates a branded OG image at `/og/simple?title=Your+Post+Title` with dimensions 1200x630.
+
+<Tip>
+  For best results, use custom images sized at 1200x630 pixels and save them in `/public/images/blog/`.
+</Tip>
+
+## RSS Feed
+
+The blog automatically generates an RSS feed at `/blog/rss` for content syndication.
+
+### RSS Implementation
+
+The RSS feed is generated in `src/app/(app)/(docs)/blog/rss/route.ts:4`:
+
+```typescript
+import { SITE_INFO } from "@/config/site.config";
+import { getAllPosts } from "@/services/blog";
+
+export function GET() {
+  const allPosts = getAllPosts();
+
+  const itemsXml = allPosts
+    .map(
+      (post) =>
+        `<item>
+          <title>${post.metadata.title}</title>
+          <link>${SITE_INFO.url}/blog/${post.slug}</link>
+          <description>${post.metadata.description || ""}</description>
+          <pubDate>${new Date(post.metadata.createdAt).toISOString()}</pubDate>
+        </item>`
+    )
+    .join("\n");
+
+  const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+  <rss version="2.0">
+    <channel>
+      <title>Blog | ${SITE_INFO.name}</title>
+      <link>${SITE_INFO.url}</link>
+      <description>${SITE_INFO.description}</description>
+      ${itemsXml}
+    </channel>
+  </rss>`;
+
+  return new Response(rssFeed, {
+    headers: {
+      "Content-Type": "text/xml",
+    },
+  });
+}
+```
+
+### RSS Features
+
+- Automatically includes all published posts
+- Provides title, link, description, and publication date
+- Accessible at `https://yoursite.com/blog/rss`
+- Compatible with all major RSS readers
+
+## Markdown Access
+
+Blog posts support direct Markdown access by appending `.mdx` to the URL:
+
+```
+https://yoursite.com/blog/welcome      # HTML view
+https://yoursite.com/blog/welcome.mdx  # Raw MDX view
+```
+
+This is useful for:
+- AI agents and LLMs accessing content
+- Developer tools and integrations
+- Content migration and backup
+
+<Note>
+  The `.mdx` endpoint returns the raw MDX content including frontmatter.
+</Note>
+
+## Code Syntax Highlighting
+
+All code blocks in blog posts automatically receive syntax highlighting:
+
+````mdx
+```typescript
+const greeting = "Hello, World!";
+console.log(greeting);
+```
+````
+
+Supported features:
+- Language-specific highlighting
+- Line numbers
+- Copy to clipboard button
+- Multiple language support
+
+## Blog Post Processing
+
+Posts are processed using the `getAllPosts()` function from `src/services/blog.ts:40`:
+
+```typescript
+export function getAllPosts() {
+  return getMDXData(path.join(process.cwd(), "src/content/blog")).sort((a, b) => {
+    if (a.metadata.pinned && !b.metadata.pinned) return -1;
+    if (!a.metadata.pinned && b.metadata.pinned) return 1;
+
+    return new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime();
+  });
+}
+```
+
+### Sorting Logic
+
+1. Pinned posts appear first
+2. Remaining posts sorted by creation date (newest first)
+3. Uses `createdAt` field for timestamp comparison
+
+## SEO Optimization
+
+Each blog post includes:
+
+- JSON-LD structured data (BlogPosting schema)
+- Open Graph meta tags
+- Twitter Card meta tags
+- Canonical URLs
+- Sitemap entries
+
+<Tip>
+  The blog system automatically generates all SEO metadata. You only need to provide the frontmatter fields.
+</Tip>
+
+## Navigation Features
+
+The blog includes built-in navigation:
+
+- Previous/Next post buttons with keyboard shortcuts (← →)
+- Search functionality across all posts
+- Category filtering (when using `category` field)
+- Post sharing menu
+- LLM-friendly copy options
+
+## Example Post
+
+Here's a complete example from `src/content/blog/welcome.mdx:1`:
+
+```mdx
+---
+title: Welcome to tonysantana.dev
+description: A minimal portfolio, component registry, and blog to showcase my work as a Software Engineer.
+image: /images/blog/welcome.webp
+createdAt: 2025-09-21
+updatedAt: 2025-09-21
+---
+
+## Tech Stack
+
+- Next.js 15
+- Tailwind CSS v4
+- shadcn/ui
+
+## Featured
+
+- Clean & modern design
+- Light & Dark theme support
+- vCard integration
+- SEO optimization: [JSON-LD schema](https://json-ld.org), sitemap, robots
+- AI-friendly [/llms.txt](https://llmstxt.org)
+- Installable PWA
+
+## Blog
+
+- MDX & Markdown support
+- Access markdown by adding `.md` to URLs, e.g. `/blog/welcome.md`
+- Syntax Highlighting for better readability
+- RSS Feed for easy content distribution
+- Dynamic OG Images for rich previews
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Use descriptive filenames">
+    Choose clear, SEO-friendly filenames that describe your content:
+    - `getting-started.mdx` ✓
+    - `post1.mdx` ✗
+  </Step>
+
+  <Step title="Optimize images">
+    Use optimized images for faster loading:
+    - Format: WebP recommended
+    - Size: 1200x630 for OG images
+    - Location: `/public/images/blog/`
+  </Step>
+
+  <Step title="Update dates">
+    Keep `updatedAt` current when editing posts to reflect accurate modification times.
+  </Step>
+
+  <Step title="Write clear descriptions">
+    Craft compelling descriptions (150-160 characters) for better SEO and social sharing.
+  </Step>
+</Steps>

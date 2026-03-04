@@ -1,0 +1,458 @@
+---
+title: Vercel Deployment
+description: Deploy your Tony Santana Portfolio to Vercel with automatic builds, GitHub integration, and optimized production settings.
+---
+
+Vercel provides the optimal hosting platform for Next.js applications with zero-configuration deployments, automatic HTTPS, and global CDN distribution.
+
+## Prerequisites
+
+Before deploying to Vercel, ensure you have:
+
+- A [Vercel account](https://vercel.com/signup) (free tier available)
+- Your portfolio repository on [GitHub](https://github.com)
+- All required [environment variables](/deployment/environment-variables) ready
+- Node.js 18+ and pnpm installed locally
+
+## Quick Deploy
+
+Deploy your portfolio in minutes using Vercel's GitHub integration.
+
+<Steps>
+  <Step title="Import Repository">
+    Navigate to [Vercel Dashboard](https://vercel.com/new) and click "Import Project"
+    
+    Connect your GitHub account if you haven't already, then select your portfolio repository.
+  </Step>
+  
+  <Step title="Configure Project">
+    Vercel automatically detects Next.js settings:
+    
+    ```bash
+    Framework Preset: Next.js
+    Build Command: pnpm build
+    Output Directory: .next
+    Install Command: pnpm install
+    Development Command: pnpm dev
+    ```
+    
+    <Note>
+    These settings match the scripts in `package.json:6-11`. No changes needed.
+    </Note>
+  </Step>
+  
+  <Step title="Add Environment Variables">
+    Click "Environment Variables" and add the following:
+    
+    <CodeGroup>
+    ```bash Production
+    APP_URL=https://your-domain.com
+    REGISTRY_NAMESPACE=@yourname
+    REGISTRY_NAMESPACE_URL=https://your-domain.com/r/{name}.json
+    GITHUB_API_TOKEN=ghp_your_token_here
+    NEXT_PUBLIC_POSTHOG_KEY=phc_your_key_here
+    NEXT_PUBLIC_POSTHOG_HOST=https://ph.your-domain.com
+    NEXT_PUBLIC_POSTHOG_UI_HOST=https://us.i.posthog.com
+    NEXT_PUBLIC_DMCA_URL=https://www.dmca.com/Protection/Status.aspx?ID=your-id
+    ```
+    
+    ```bash Preview (Optional)
+    APP_URL=https://preview.your-domain.com
+    REGISTRY_NAMESPACE=@yourname-preview
+    REGISTRY_NAMESPACE_URL=https://preview.your-domain.com/r/{name}.json
+    ```
+    </CodeGroup>
+    
+    <Warning>
+    For each variable, select the appropriate environment: Production, Preview, or Development.
+    </Warning>
+  </Step>
+  
+  <Step title="Deploy">
+    Click "Deploy" and wait for the build to complete.
+    
+    Vercel will:
+    1. Clone your repository
+    2. Install dependencies with `pnpm install`
+    3. Run `pnpm build` (defined in `package.json:7`)
+    4. Deploy the `.next` output directory
+    5. Assign a `.vercel.app` domain
+  </Step>
+  
+  <Step title="Visit Your Site">
+    Once deployment completes, click "Visit" to see your live portfolio.
+    
+    You'll receive a URL like: `https://your-portfolio.vercel.app`
+  </Step>
+</Steps>
+
+## Custom Domain Setup
+
+Connect your custom domain for a professional portfolio URL.
+
+<Steps>
+  <Step title="Add Domain">
+    In your Vercel project dashboard:
+    1. Go to Settings > Domains
+    2. Enter your domain (e.g., `tonysantana.dev`)
+    3. Click "Add"
+  </Step>
+  
+  <Step title="Configure DNS">
+    Vercel provides DNS records to add to your domain registrar:
+    
+    **For root domain (`tonysantana.dev`):**
+    ```
+    Type: A
+    Name: @
+    Value: 76.76.21.21
+    ```
+    
+    **For www subdomain:**
+    ```
+    Type: CNAME
+    Name: www
+    Value: cname.vercel-dns.com
+    ```
+    
+    <Note>
+    DNS propagation can take up to 48 hours, but typically completes within minutes.
+    </Note>
+  </Step>
+  
+  <Step title="Update Environment Variables">
+    Update `APP_URL` to match your custom domain:
+    
+    ```bash
+    APP_URL=https://tonysantana.dev
+    REGISTRY_NAMESPACE_URL=https://tonysantana.dev/r/{name}.json
+    ```
+    
+    This ensures metadata, OG images, and canonical URLs use your custom domain.
+  </Step>
+  
+  <Step title="Verify SSL Certificate">
+    Vercel automatically provisions SSL certificates via Let's Encrypt.
+    
+    Once DNS is configured, your site will be accessible via HTTPS within minutes.
+  </Step>
+</Steps>
+
+## Deployment Configuration
+
+### Build Settings
+
+Vercel uses the build configuration from `next.config.ts` and `package.json`:
+
+<CodeGroup>
+```typescript next.config.ts
+const nextConfig: NextConfig = {
+  // Serverless function packages
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  
+  // React optimizations
+  reactStrictMode: true,
+  reactCompiler: true,
+  cacheComponents: true,
+  
+  // Bundle optimization
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
+  
+  // Image optimization
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.siduslink.com",
+      },
+    ],
+    qualities: [75, 100],
+  },
+};
+```
+
+```json package.json
+{
+  "scripts": {
+    "build": "next build",
+    "start": "next start",
+    "dev": "next dev -p 3000"
+  }
+}
+```
+</CodeGroup>
+
+### Serverless Functions
+
+The portfolio uses Vercel serverless functions for dynamic features:
+
+- **PDF Export** (`src/app/api/export/pdf/route.ts:17`) - Generates resume PDFs using Puppeteer
+- **OG Images** (`src/app/og/`) - Creates dynamic Open Graph images
+- **RSS Feed** (`src/app/rss/`) - Generates blog RSS feed
+- **Ads.txt** (`src/app/ads.txt/route.ts:4`) - Serves dynamic ads.txt content
+
+<Note>
+Puppeteer dependencies are handled via `serverExternalPackages` in `next.config.ts:7`.
+</Note>
+
+### Headers & Caching
+
+Custom headers are configured in `next.config.ts:41-66` for optimal caching:
+
+```typescript
+async headers() {
+  return [
+    {
+      source: "/sw.js",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=0, must-revalidate",
+        },
+      ],
+    },
+    {
+      source: "/manifest.webmanifest",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+  ];
+}
+```
+
+## Automatic Deployments
+
+Vercel automatically deploys your portfolio on every Git push.
+
+### Production Deployments
+
+Deployments to your main branch (usually `main` or `master`) trigger production builds:
+
+1. Push to main branch
+2. Vercel detects the push via GitHub webhook
+3. Builds with production environment variables
+4. Deploys to your custom domain
+5. Previous deployment remains accessible (rollback available)
+
+### Preview Deployments
+
+Every pull request gets a unique preview deployment:
+
+1. Create a pull request
+2. Vercel builds with preview environment variables
+3. Unique URL generated (e.g., `your-portfolio-git-feature-name.vercel.app`)
+4. Preview updates on every commit to the PR
+5. Preview is deleted when PR is merged or closed
+
+<Note>
+Preview deployments are perfect for testing changes before merging to production.
+</Note>
+
+## Environment-Specific Configuration
+
+Vercel provides three deployment environments:
+
+<CodeGroup>
+```bash Production
+# Used for main branch deployments
+VERCEL_ENV=production
+APP_URL=https://tonysantana.dev
+
+# Production analytics
+NEXT_PUBLIC_POSTHOG_KEY=phc_production_key
+```
+
+```bash Preview
+# Used for PR deployments
+VERCEL_ENV=preview
+APP_URL=https://preview-deployment.vercel.app
+
+# Preview analytics (optional)
+NEXT_PUBLIC_POSTHOG_KEY=phc_preview_key
+```
+
+```bash Development
+# Used for local development
+VERCEL_ENV=development
+APP_URL=http://localhost:3000
+
+# Development analytics disabled
+```
+</CodeGroup>
+
+The `VERCEL_ENV` variable is automatically set by Vercel and used throughout the codebase:
+- `src/lib/pdf-config.ts:4` - Serverless detection
+- `src/app/api/export/pdf/route.ts:17` - Environment-specific PDF generation
+
+## Performance Optimization
+
+### Edge Network
+
+Vercel deploys your portfolio to a global CDN with edge locations worldwide:
+
+- Static assets cached at the edge
+- Automatic image optimization
+- Brotli compression enabled
+- HTTP/3 support
+
+### Build Cache
+
+Vercel caches builds to speed up deployments:
+
+```bash
+# Cached between builds:
+- node_modules/
+- .next/cache/
+- public/ (static assets)
+```
+
+Typical build times:
+- **First build**: 2-3 minutes
+- **Cached builds**: 30-60 seconds
+
+### Analytics
+
+Enable Vercel Analytics for performance insights:
+
+```bash
+npm i @vercel/analytics
+```
+
+The portfolio already includes Vercel Analytics (see `package.json:17`):
+
+```json
+"dependencies": {
+  "@vercel/analytics": "^1.5.0",
+  "@vercel/speed-insights": "^1.2.0"
+}
+```
+
+## Monitoring & Logs
+
+### Real-time Logs
+
+View deployment and runtime logs in the Vercel dashboard:
+
+1. Go to your project
+2. Click "Deployments"
+3. Select a deployment
+4. Click "View Function Logs"
+
+### Error Tracking
+
+Monitor errors in production:
+
+1. Navigate to "Analytics" > "Errors"
+2. View error frequency and affected pages
+3. Click errors for stack traces and context
+
+<Warning>
+Enable error tracking for production to catch issues before users report them.
+</Warning>
+
+## Rollback Deployments
+
+Revert to a previous deployment instantly:
+
+<Steps>
+  <Step title="Access Deployments">
+    Go to your project > Deployments
+  </Step>
+  
+  <Step title="Select Previous Deployment">
+    Find a working deployment from the list
+  </Step>
+  
+  <Step title="Promote to Production">
+    Click the three dots menu > "Promote to Production"
+  </Step>
+  
+  <Step title="Confirm">
+    Confirm the rollback - your site updates instantly
+  </Step>
+</Steps>
+
+<Note>
+Rollbacks don't require a rebuild and take effect immediately.
+</Note>
+
+## Troubleshooting
+
+### Build Failures
+
+If your deployment fails:
+
+1. **Check build logs** - View detailed error messages in the deployment logs
+2. **Verify environment variables** - Ensure all required variables are set
+3. **Test locally** - Run `pnpm build` to reproduce the issue
+4. **Check dependencies** - Verify `package.json` dependencies are compatible
+
+### Environment Variable Issues
+
+Common environment variable problems:
+
+```bash
+# ❌ Wrong - Missing NEXT_PUBLIC_ prefix for client-side variable
+POSTHOG_KEY=phc_xxxxx
+
+# ✓ Correct - Client-side variable with NEXT_PUBLIC_ prefix
+NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxx
+
+# ❌ Wrong - Using preview URL in production
+APP_URL=https://preview.vercel.app
+
+# ✓ Correct - Using production domain
+APP_URL=https://tonysantana.dev
+```
+
+### Serverless Function Timeout
+
+If PDF generation times out:
+
+1. Check function logs for errors
+2. Verify Puppeteer dependencies are in `serverExternalPackages`
+3. Consider upgrading to Vercel Pro for longer timeout limits (10s → 60s)
+
+### Image Optimization Errors
+
+If remote images fail to load:
+
+1. Verify the domain is in `next.config.ts:32-38` remote patterns:
+   ```typescript
+   images: {
+     remotePatterns: [
+       {
+         protocol: "https",
+         hostname: "cdn.siduslink.com",
+       },
+     ],
+   }
+   ```
+2. Add additional domains as needed
+3. Redeploy after updating `next.config.ts`
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="key" href="/deployment/environment-variables">
+    Configure all required environment variables
+  </Card>
+  
+  <Card title="Build Configuration" icon="gear" href="/deployment/build-configuration">
+    Optimize build settings and performance
+  </Card>
+  
+  <Card title="Custom Domain" icon="globe" href="https://vercel.com/docs/concepts/projects/domains">
+    Set up your custom domain
+  </Card>
+  
+  <Card title="Vercel CLI" icon="terminal" href="https://vercel.com/docs/cli">
+    Deploy from the command line
+  </Card>
+</CardGroup>

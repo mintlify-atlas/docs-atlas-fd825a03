@@ -1,0 +1,672 @@
+---
+title: Build Configuration
+description: Understand and optimize the Next.js build configuration, scripts, and production settings for your portfolio.
+---
+
+The Tony Santana Portfolio uses Next.js 16 with advanced optimizations for performance, serverless functions, and production deployments. This guide covers all build configuration aspects.
+
+## Build Scripts
+
+Your `package.json` defines essential build and development scripts.
+
+### Available Scripts
+
+<CodeGroup>
+```json package.json
+{
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "build:debug": "next build --debug-prerender",
+    "start": "next start",
+    "lint": "biome check --write",
+    "format": "biome format --write"
+  }
+}
+```
+</CodeGroup>
+
+<ParamField path="dev" type="command">
+  Starts the development server on port 3000.
+  
+  ```bash
+  pnpm dev
+  ```
+  
+  Features:
+  - Hot module replacement (HMR)
+  - Fast refresh for instant updates
+  - Development-only error overlays
+  - Source maps for debugging
+</ParamField>
+
+<ParamField path="build" type="command">
+  Creates an optimized production build.
+  
+  ```bash
+  pnpm build
+  ```
+  
+  Build process:
+  1. Compiles TypeScript to JavaScript
+  2. Optimizes React components with React Compiler
+  3. Bundles and minifies JavaScript/CSS
+  4. Generates static pages (SSG)
+  5. Creates serverless functions for API routes
+  6. Optimizes images and assets
+  
+  Output: `.next/` directory
+</ParamField>
+
+<ParamField path="build:debug" type="command">
+  Debug build with prerender information.
+  
+  ```bash
+  pnpm build:debug
+  ```
+  
+  Use this to:
+  - Diagnose static generation issues
+  - View prerendering details
+  - Debug build-time errors
+  - Analyze page generation strategy
+</ParamField>
+
+<ParamField path="start" type="command">
+  Starts the production server.
+  
+  ```bash
+  pnpm build && pnpm start
+  ```
+  
+  <Warning>
+  Always run `pnpm build` before `pnpm start` to ensure you're serving the latest production build.
+  </Warning>
+</ParamField>
+
+<ParamField path="lint" type="command">
+  Runs Biome linter with auto-fix.
+  
+  ```bash
+  pnpm lint
+  ```
+  
+  Checks:
+  - Code style violations
+  - TypeScript errors
+  - Import/export issues
+  - Best practice violations
+</ParamField>
+
+<ParamField path="format" type="command">
+  Formats code with Biome.
+  
+  ```bash
+  pnpm format
+  ```
+  
+  Formats all TypeScript, JavaScript, and JSON files according to project style rules.
+</ParamField>
+
+## Next.js Configuration
+
+The `next.config.ts` file controls build behavior and runtime settings.
+
+### Core Configuration
+
+<CodeGroup>
+```typescript next.config.ts
+import type { NextConfig } from "next";
+import path from "path";
+
+const nextConfig: NextConfig = {
+  // External packages for serverless functions
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  
+  // Experimental features
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
+  
+  // React optimizations
+  reactStrictMode: true,
+  reactCompiler: true,
+  cacheComponents: true,
+  
+  // Package configuration
+  transpilePackages: ["next-mdx-remote"],
+  allowedDevOrigins: [],
+  devIndicators: false,
+  
+  // Turbopack configuration
+  turbopack: {
+    root: path.join(__dirname, "."),
+  },
+  
+  // Logging configuration
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
+};
+
+export default nextConfig;
+```
+</CodeGroup>
+
+### Serverless Functions
+
+<ParamField path="serverExternalPackages" type="string[]">
+  External packages excluded from serverless function bundling.
+  
+  ```typescript
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"]
+  ```
+  
+  **Why needed:**
+  - Puppeteer requires native binaries
+  - Chromium is too large for webpack bundling
+  - External packages reduce function size
+  
+  Used by:
+  - PDF export API (`src/app/api/export/pdf/route.ts`)
+  - OG image generation (`src/app/og/`)
+</ParamField>
+
+### React Optimizations
+
+<ParamField path="reactStrictMode" type="boolean" default="true">
+  Enables React Strict Mode for development warnings.
+  
+  ```typescript
+  reactStrictMode: true
+  ```
+  
+  Benefits:
+  - Identifies unsafe lifecycles
+  - Warns about deprecated APIs
+  - Detects unexpected side effects
+  - Highlights potential problems
+  
+  <Note>
+  Strict Mode only runs in development and doesn't impact production bundles.
+  </Note>
+</ParamField>
+
+<ParamField path="reactCompiler" type="boolean" default="true">
+  Enables the new React Compiler for automatic optimization.
+  
+  ```typescript
+  reactCompiler: true
+  ```
+  
+  Features:
+  - Automatic memoization
+  - Optimized re-renders
+  - Better performance without manual optimizations
+  - Reduced bundle size
+  
+  Requires `babel-plugin-react-compiler` (already in `package.json:19`).
+</ParamField>
+
+<ParamField path="cacheComponents" type="boolean" default="true">
+  Enables component-level caching for improved performance.
+  
+  ```typescript
+  cacheComponents: true
+  ```
+  
+  Caches compiled components between builds for faster rebuilds.
+</ParamField>
+
+### Bundle Optimization
+
+<ParamField path="experimental.optimizePackageImports" type="string[]">
+  Optimizes imports from specified packages.
+  
+  ```typescript
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  }
+  ```
+  
+  **Impact:**
+  - Tree-shaking for icon libraries
+  - Smaller bundle size
+  - Faster page loads
+  
+  **Example:**
+  ```typescript
+  // Before: Imports entire library
+  import { HomeIcon, UserIcon } from "lucide-react";
+  
+  // After optimization: Only imports used icons
+  // Bundle size: ~5KB instead of ~500KB
+  ```
+</ParamField>
+
+<ParamField path="transpilePackages" type="string[]">
+  Packages to transpile from node_modules.
+  
+  ```typescript
+  transpilePackages: ["next-mdx-remote"]
+  ```
+  
+  Required for packages using modern JavaScript not compatible with your target browsers.
+</ParamField>
+
+### Image Optimization
+
+<CodeGroup>
+```typescript next.config.ts
+images: {
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "cdn.siduslink.com",
+      port: "",
+    },
+  ],
+  qualities: [75, 100],
+}
+```
+</CodeGroup>
+
+<ParamField path="images.remotePatterns" type="object[]">
+  Allowed remote image sources for Next.js Image component.
+  
+  **Configuration:**
+  ```typescript
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "cdn.siduslink.com",
+    },
+  ]
+  ```
+  
+  **Adding new domains:**
+  ```typescript
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "cdn.siduslink.com",
+    },
+    {
+      protocol: "https",
+      hostname: "images.unsplash.com",
+    },
+  ]
+  ```
+  
+  <Warning>
+  Images from unlisted domains will fail to load. Add all remote image sources here.
+  </Warning>
+</ParamField>
+
+<ParamField path="images.qualities" type="number[]">
+  Image quality settings for optimization.
+  
+  ```typescript
+  qualities: [75, 100]
+  ```
+  
+  - `75` - Default quality (good balance)
+  - `100` - Maximum quality (larger files)
+  
+  Next.js serves the appropriate quality based on device and connection speed.
+</ParamField>
+
+### Custom Headers
+
+<CodeGroup>
+```typescript next.config.ts
+async headers() {
+  return [
+    {
+      source: "/sw.js",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=0, must-revalidate",
+        },
+        {
+          key: "Service-Worker-Allowed",
+          value: "/",
+        },
+      ],
+    },
+    {
+      source: "/manifest.webmanifest",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=31536000, immutable",
+        },
+      ],
+    },
+  ];
+}
+```
+</CodeGroup>
+
+Custom headers optimize caching and PWA functionality:
+
+**Service Worker (`/sw.js`):**
+- `max-age=0, must-revalidate` - Always check for updates
+- `Service-Worker-Allowed: /` - Allow service worker for entire site
+
+**Web Manifest (`/manifest.webmanifest`):**
+- `max-age=31536000, immutable` - Cache for 1 year
+- Manifest rarely changes, safe to cache long-term
+
+### URL Rewrites
+
+<CodeGroup>
+```typescript next.config.ts
+async rewrites() {
+  return [
+    {
+      source: "/blog/:slug.mdx",
+      destination: "/blog.mdx/:slug",
+    },
+    {
+      source: "/resume/:slug.mdx",
+      destination: "/resume.mdx/:slug",
+    },
+  ];
+}
+```
+</CodeGroup>
+
+Rewrites enable clean URLs for MDX content:
+
+- `tonysantana.dev/blog/my-post` → Serves `/blog.mdx/my-post`
+- `tonysantana.dev/resume/tony-santana` → Serves `/resume.mdx/tony-santana`
+
+<Note>
+Rewrites are invisible to users. The URL bar shows the clean URL while Next.js serves the rewritten path.
+</Note>
+
+### Trailing Slash
+
+<ParamField path="trailingSlash" type="boolean" default="false">
+  Controls whether URLs should have trailing slashes.
+  
+  ```typescript
+  trailingSlash: false
+  ```
+  
+  **Result:**
+  - ✓ `tonysantana.dev/blog` (without slash)
+  - ✗ `tonysantana.dev/blog/` (with slash redirects to without)
+  
+  Improves SEO by preventing duplicate content at different URLs.
+</ParamField>
+
+### Development Configuration
+
+<ParamField path="devIndicators" type="boolean" default="false">
+  Disables the build indicator in development.
+  
+  ```typescript
+  devIndicators: false
+  ```
+  
+  Removes the "Compiled in X ms" indicator from the bottom-right corner during development.
+</ParamField>
+
+<ParamField path="logging.fetches.fullUrl" type="boolean" default="true">
+  Logs full URLs for fetch requests.
+  
+  ```typescript
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  }
+  ```
+  
+  Helpful for debugging API calls and external requests during development.
+</ParamField>
+
+## Build Output
+
+Understanding the `.next/` directory structure:
+
+```bash
+.next/
+├── cache/              # Build cache for faster rebuilds
+├── server/             # Server-side bundles and pages
+│   ├── app/           # App router pages and routes
+│   ├── chunks/        # Shared server chunks
+│   └── pages/         # API routes and functions
+├── static/            # Static assets and chunks
+│   ├── chunks/        # JavaScript bundles
+│   ├── css/           # Compiled stylesheets
+│   └── media/         # Optimized images
+└── types/             # Generated TypeScript types
+```
+
+### Build Statistics
+
+When you run `pnpm build`, Next.js outputs build statistics:
+
+```bash
+Route (app)                              Size     First Load JS
+┌ ○ /                                    142 B          87.4 kB
+├ ○ /blog                                5.2 kB         92.6 kB
+├ ○ /blog/[slug]                         8.1 kB         95.5 kB
+└ ○ /resume/[slug]                       12.3 kB        99.7 kB
+
+○  (Static)  prerendered as static content
+λ  (Dynamic) server-rendered on demand
+```
+
+**Legend:**
+- `○` Static - Pre-rendered at build time
+- `λ` Dynamic - Rendered on request
+- **Size** - Page-specific bundle size
+- **First Load JS** - Total JavaScript loaded on first visit
+
+## Production Optimizations
+
+### Automatic Optimizations
+
+Next.js applies these optimizations automatically in production:
+
+<Steps>
+  <Step title="Code Minification">
+    JavaScript and CSS are minified using SWC and cssnano.
+    
+    **Benefit:** Smaller file sizes, faster downloads
+  </Step>
+  
+  <Step title="Tree Shaking">
+    Unused code is removed from bundles.
+    
+    **Example:** If you import one icon from `lucide-react`, only that icon is bundled.
+  </Step>
+  
+  <Step title="Code Splitting">
+    Each page gets its own bundle, loaded on demand.
+    
+    **Benefit:** Faster initial page load
+  </Step>
+  
+  <Step title="Image Optimization">
+    Images are automatically optimized, resized, and served in modern formats (WebP, AVIF).
+    
+    **Benefit:** 50-70% smaller image sizes
+  </Step>
+  
+  <Step title="Font Optimization">
+    Google Fonts and local fonts are optimized and inlined.
+    
+    **Benefit:** No layout shift, faster text rendering
+  </Step>
+</Steps>
+
+### React Compiler Benefits
+
+The React Compiler (`reactCompiler: true`) provides automatic optimizations:
+
+```typescript
+// Before: Manual memoization needed
+const MemoizedComponent = React.memo(({ data }) => {
+  const processed = useMemo(() => processData(data), [data]);
+  return <div>{processed}</div>;
+});
+
+// After: Compiler handles it automatically
+const Component = ({ data }) => {
+  const processed = processData(data);
+  return <div>{processed}</div>;
+};
+```
+
+**Performance gains:**
+- 10-30% faster re-renders
+- Smaller bundle sizes
+- Less manual optimization needed
+
+### Bundle Analysis
+
+Analyze your bundle size to identify optimization opportunities:
+
+```bash
+npm install @next/bundle-analyzer
+```
+
+Add to `next.config.ts`:
+
+```typescript
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+module.exports = withBundleAnalyzer(nextConfig);
+```
+
+Run analysis:
+
+```bash
+ANALYZE=true pnpm build
+```
+
+## Testing Production Builds
+
+Always test production builds locally before deploying:
+
+<Steps>
+  <Step title="Create Production Build">
+    ```bash
+    pnpm build
+    ```
+  </Step>
+  
+  <Step title="Start Production Server">
+    ```bash
+    pnpm start
+    ```
+  </Step>
+  
+  <Step title="Test Functionality">
+    Visit `http://localhost:3000` and verify:
+    - All pages load correctly
+    - Images are optimized
+    - API routes work
+    - Environment variables are applied
+    - Analytics are tracking (if enabled)
+  </Step>
+  
+  <Step title="Check Browser Console">
+    Look for errors or warnings in the browser console.
+  </Step>
+  
+  <Step title="Test Performance">
+    Use Lighthouse to measure performance, accessibility, and SEO.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Build Errors
+
+**TypeScript errors during build:**
+
+```bash
+Type error: Property 'x' does not exist on type 'Y'
+```
+
+**Solution:**
+1. Fix TypeScript errors in your code
+2. Run `pnpm lint` to check all files
+3. Verify types are correct in `package.json` dependencies
+
+**Module not found errors:**
+
+```bash
+Module not found: Can't resolve 'package-name'
+```
+
+**Solution:**
+1. Install missing dependency: `pnpm install package-name`
+2. Verify import paths are correct
+3. Check `package.json` for the dependency
+
+### Performance Issues
+
+**Large bundle sizes:**
+
+1. Run bundle analyzer (see above)
+2. Use dynamic imports for large components:
+   ```typescript
+   const HeavyComponent = dynamic(() => import('./HeavyComponent'));
+   ```
+3. Optimize images (use WebP/AVIF)
+4. Enable `optimizePackageImports` for large libraries
+
+**Slow builds:**
+
+1. Clear Next.js cache: `rm -rf .next/cache`
+2. Update dependencies: `pnpm update`
+3. Check for unnecessary `transpilePackages`
+4. Disable source maps in production (Next.js default)
+
+### Environment Variable Issues
+
+**Variables not available at build time:**
+
+```typescript
+// ❌ Wrong - Won't work in static pages
+const apiUrl = process.env.API_URL;
+
+// ✓ Correct - Available at build time
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+```
+
+<Warning>
+Only `NEXT_PUBLIC_` prefixed variables are available in client-side code and static pages.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Variables" icon="key" href="/deployment/environment-variables">
+    Configure production environment variables
+  </Card>
+  
+  <Card title="Vercel Deployment" icon="rocket" href="/deployment/vercel">
+    Deploy your optimized build to Vercel
+  </Card>
+  
+  <Card title="Next.js Docs" icon="book" href="https://nextjs.org/docs">
+    Official Next.js documentation
+  </Card>
+  
+  <Card title="Performance Optimization" icon="gauge" href="https://nextjs.org/docs/app/building-your-application/optimizing">
+    Advanced optimization techniques
+  </Card>
+</CardGroup>

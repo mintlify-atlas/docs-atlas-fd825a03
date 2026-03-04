@@ -1,0 +1,311 @@
+---
+title: Frontmatter Reference
+description: Complete reference for blog post frontmatter fields, including required fields, optional metadata, and special flags for post customization.
+---
+
+Frontmatter is the YAML metadata at the top of each MDX blog post. It defines post information, appearance, and behavior.
+
+## Frontmatter Structure
+
+Frontmatter appears between triple dashes at the start of your `.mdx` file:
+
+```mdx
+---
+title: Your Post Title
+description: A brief description of your post
+createdAt: 2025-09-21
+updatedAt: 2025-09-21
+---
+
+Your post content starts here...
+```
+
+## Required Fields
+
+These fields are required for every blog post:
+
+### title
+
+**Type:** `string`
+
+The main title of your blog post. Used in:
+- Page title and meta tags
+- Blog post listings
+- RSS feed
+- Open Graph/social sharing
+
+```yaml
+title: Welcome to tonysantana.dev
+```
+
+### description
+
+**Type:** `string`
+
+A brief summary of the post content. Used in:
+- Meta description tag
+- Blog post listings
+- RSS feed
+- Social media previews
+
+```yaml
+description: A minimal portfolio, component registry, and blog to showcase my work as a Software Engineer.
+```
+
+### createdAt
+
+**Type:** `string` (ISO date format: YYYY-MM-DD)
+
+The date the post was originally published. Used for:
+- Sorting posts (newest first)
+- Displaying publication date
+- RSS feed pubDate
+- Structured data (JSON-LD)
+
+```yaml
+createdAt: 2025-09-21
+```
+
+### updatedAt
+
+**Type:** `string` (ISO date format: YYYY-MM-DD)
+
+The last modification date. Used for:
+- Showing last updated information
+- Open Graph modified time
+- Structured data
+
+```yaml
+updatedAt: 2025-09-21
+```
+
+## Optional Fields
+
+These fields enhance your post but aren't required:
+
+### image
+
+**Type:** `string` (URL or path)
+
+Social/Open Graph image for the post. Recommended size: 1200x630 pixels.
+
+If not provided, a dynamic OG image is generated from the title.
+
+```yaml
+image: /images/blog/welcome.webp
+```
+
+<Note>
+Store blog images in `public/images/blog/` and reference them with absolute paths starting with `/images/blog/`.
+</Note>
+
+### category
+
+**Type:** `string`
+
+Category identifier/slug for filtering posts. Used by `getPostsByCategory()` function.
+
+```yaml
+category: components
+```
+
+Example categories:
+- `tutorial`
+- `announcement`
+- `components`
+- `development`
+
+### icon
+
+**Type:** `string`
+
+Custom icon name or Lucide icon name. Visually represents the post in lists or navigation.
+
+```yaml
+icon: RocketIcon
+```
+
+### new
+
+**Type:** `boolean`
+
+Displays a "New" badge/highlight in the UI to draw attention to recent posts.
+
+```yaml
+new: true
+```
+
+### pinned
+
+**Type:** `boolean`
+
+Pins the post to the top of the blog list, regardless of publication date.
+
+```yaml
+pinned: true
+```
+
+## Complete Examples
+
+### Minimal Post
+
+With only required fields:
+
+```yaml
+---
+title: Getting Started with Next.js
+description: Learn the basics of building with Next.js 15
+createdAt: 2025-09-21
+updatedAt: 2025-09-21
+---
+```
+
+### Full-Featured Post
+
+With all available fields:
+
+```yaml
+---
+title: "Deploying an HTML-to-PDF API on Vercel with Puppeteer"
+author: "Tony Santana"
+description: "In this article, we will explore how to create an HTML-to-PDF API on Vercel using Puppeteer"
+readingTime: "4 min read"
+image: /images/blog/print-pdf-in-vercel.webp
+createdAt: 2025-09-26
+updatedAt: 2025-09-26
+category: tutorial
+icon: FileTextIcon
+new: true
+pinned: false
+---
+```
+
+### Pinned Announcement
+
+For important announcements:
+
+```yaml
+---
+title: Welcome to tonysantana.dev
+description: A minimal portfolio, component registry, and blog to showcase my work as a Software Engineer.
+image: /images/blog/welcome.webp
+createdAt: 2025-09-21
+updatedAt: 2025-09-21
+pinned: true
+---
+```
+
+## Type Definition
+
+The complete TypeScript type definition from `src/types/post.ts`:
+
+```typescript title="src/types/post.ts"
+export type PostMetadata = {
+  title: string;
+  description: string;
+  /**
+   * Social/OG image URL for the post.
+   * Use an absolute URL or a path under /public. Recommended size: 1200x630.
+   */
+  image?: string;
+  /**
+   * Category identifier/slug used for filtering (see getPostsByCategory).
+   */
+  category?: string;
+  /**
+   * Custom icon name or a Lucide icon name.
+   * Used to visually represent the post in lists or navigation.
+   */
+  icon?: string;
+  /**
+   * Flag to show a "New" badge/highlight in the UI.
+   */
+  new?: boolean;
+  /**
+   * Flag to pin the post to the top of the list.
+   */
+  pinned?: boolean;
+  /**
+   * Post creation date as an ISO date string (e.g. YYYY-MM-DD). Used for sorting.
+   */
+  createdAt: string;
+  /**
+   * Last updated date as an ISO date string (e.g. YYYY-MM-DD).
+   */
+  updatedAt: string;
+};
+
+export type Post = {
+  /** Parsed frontmatter metadata from the MDX file. */
+  metadata: PostMetadata;
+  /** Slug derived from the MDX filename (without extension). */
+  slug: string;
+  /** MDX content body without frontmatter. */
+  content: string;
+};
+```
+
+## Sorting Behavior
+
+Posts are sorted with this logic (from `src/services/blog.ts`):
+
+1. **Pinned posts** appear first
+2. **Remaining posts** sorted by `createdAt` date (newest first)
+
+```typescript
+export function getAllPosts() {
+  return getMDXData(path.join(process.cwd(), "src/content/blog")).sort((a, b) => {
+    if (a.metadata.pinned && !b.metadata.pinned) return -1;
+    if (!a.metadata.pinned && b.metadata.pinned) return 1;
+
+    return new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime();
+  });
+}
+```
+
+## SEO and Social Sharing
+
+Frontmatter fields directly impact SEO and social sharing:
+
+- **title** → `<title>`, Open Graph title, Twitter card title
+- **description** → `<meta name="description">`, OG description
+- **image** → Open Graph image, Twitter card image
+- **createdAt** → Published time in structured data
+- **updatedAt** → Modified time in structured data
+
+## Custom Fields
+
+You can add custom frontmatter fields that aren't in the TypeScript type. They'll be available in `post.metadata` but won't have type checking.
+
+Example with custom fields:
+
+```yaml
+---
+title: My Post
+description: Post description
+createdAt: 2025-09-21
+updatedAt: 2025-09-21
+author: Tony Santana
+readingTime: 5 min read
+tags:
+  - nextjs
+  - react
+  - typescript
+---
+```
+
+Access them in your templates:
+
+```tsx
+const author = post.metadata.author; // TypeScript won't validate this
+```
+
+<Note>
+To get type safety for custom fields, extend the `PostMetadata` type in `src/types/post.ts`.
+</Note>
+
+## Next Steps
+
+- Learn how to [create blog posts](/blog/creating-posts)
+- Explore [MDX components](/blog/mdx-components)
+- Set up the [RSS feed](/blog/rss-feed)

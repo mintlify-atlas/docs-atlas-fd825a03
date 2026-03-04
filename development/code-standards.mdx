@@ -1,0 +1,379 @@
+---
+title: Code Standards
+description: TypeScript conventions, linting rules, and code formatting standards for the Tony Santana Portfolio project.
+---
+
+This project follows strict code quality standards using TypeScript, Biome for linting and formatting, and established best practices.
+
+## TypeScript Configuration
+
+The project uses TypeScript in strict mode with the following compiler options:
+
+### Key Settings
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+### Type Safety Guidelines
+
+<Steps>
+  <Step title="Use explicit types when necessary">
+    Write type-safe code with explicit types for function parameters and return values:
+
+    ```typescript
+    // Good
+    export function cn(...inputs: ClassValue[]): string {
+      return twMerge(clsx(inputs));
+    }
+
+    // Avoid
+    export function cn(...inputs) {
+      return twMerge(clsx(inputs));
+    }
+    ```
+  </Step>
+
+  <Step title="Leverage type inference">
+    Let TypeScript infer types when they're obvious:
+
+    ```typescript
+    // Good - type is inferred
+    const posts = getAllPosts();
+
+    // Unnecessary
+    const posts: Post[] = getAllPosts();
+    ```
+  </Step>
+
+  <Step title="Prefer interfaces for object types">
+    Use interfaces for defining object shapes:
+
+    ```typescript
+    interface User {
+      name: string;
+      email: string;
+      bio?: string;
+    }
+    ```
+  </Step>
+
+  <Step title="Use const assertions">
+    Use `as const` for literal types:
+
+    ```typescript
+    const ROUTES = {
+      home: "/",
+      blog: "/blog",
+      about: "/about"
+    } as const;
+    ```
+  </Step>
+</Steps>
+
+### Path Aliases
+
+The project uses the `@/` path alias for imports:
+
+```typescript
+// Good
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+// Avoid
+import { cn } from "../../lib/utils";
+import { Button } from "../../../components/ui/button";
+```
+
+## Biome Configuration
+
+The project uses [Biome](https://biomejs.dev/) for both linting and formatting, replacing ESLint and Prettier.
+
+### Formatting Rules
+
+<CodeGroup>
+```json JavaScript/TypeScript
+{
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "trailingCommas": "es5",
+      "semicolons": "always",
+      "arrowParentheses": "always"
+    }
+  }
+}
+```
+
+```json General
+{
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  }
+}
+```
+</CodeGroup>
+
+#### Formatting Standards
+
+- **Quotes**: Double quotes for strings
+- **Semicolons**: Always required
+- **Indentation**: 2 spaces
+- **Line width**: 100 characters
+- **Arrow functions**: Always use parentheses
+- **Trailing commas**: ES5 style (objects, arrays)
+
+### Linting Rules
+
+Biome linting is configured with recommended rules plus custom overrides:
+
+```json
+{
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedVariables": "warn"
+      },
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "tw", "tw.*"]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+<Note>
+  The `useSortedClasses` rule automatically sorts Tailwind CSS classes for consistency. This helps maintain a predictable class order across the codebase.
+</Note>
+
+### Import Organization
+
+Biome automatically organizes imports into logical groups:
+
+```typescript
+// 1. React imports
+import React from "react";
+import { useState, useEffect } from "react";
+
+// 2. Next.js imports
+import Image from "next/image";
+import Link from "next/link";
+
+// 3. Project imports (using @/ alias)
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+// 4. Relative imports
+import { formatDate } from "./utils";
+```
+
+Configuration:
+
+```json
+{
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "groups": [
+            ["react", "react/**", "react-dom", "react-dom/**"],
+            ":BLANK_LINE:",
+            ["next", "next/**"],
+            ":BLANK_LINE:",
+            ["~/", "~/**"],
+            ":BLANK_LINE:",
+            [":PATH:"]
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+## Running Code Quality Checks
+
+### Lint and Auto-fix
+
+Run Biome to check and fix issues:
+
+```bash
+pnpm lint
+```
+
+This command runs `biome check --write` which:
+- Checks for linting errors
+- Auto-fixes issues where possible
+- Reports remaining issues
+
+### Format Code
+
+Format code according to Biome rules:
+
+```bash
+pnpm format
+```
+
+### Type Checking
+
+Run TypeScript type checking without emitting files:
+
+```bash
+npx tsc --noEmit
+```
+
+<Tip>
+  Run `pnpm lint` before committing to ensure code quality. Consider setting up a pre-commit hook to automate this.
+</Tip>
+
+## Best Practices from AGENTS.md
+
+The project follows specific coding guidelines outlined in `AGENTS.md`:
+
+### Comments and Documentation
+
+<Steps>
+  <Step title="Comment purposefully">
+    Add comments only when they clarify complex logic, function purpose, or non-obvious behavior:
+
+    ```typescript
+    // Good - explains why
+    // Using base64 encoding to prevent email scraping
+    const email = atob(encodedEmail);
+
+    // Avoid - states the obvious
+    // Get the email
+    const email = user.email;
+    ```
+  </Step>
+
+  <Step title="Write self-documenting code">
+    Use descriptive variable and function names:
+
+    ```typescript
+    // Good
+    const isUserAuthenticated = checkAuthStatus(userId);
+
+    // Avoid
+    const flag = check(id);
+    ```
+  </Step>
+
+  <Step title="Focus on the why, not the what">
+    Comments should explain reasoning, not restate code:
+
+    ```typescript
+    // Good
+    // Cache results to prevent rate limiting from GitHub API
+    const cachedStars = getCachedGitHubStars();
+
+    // Avoid
+    // Get cached stars
+    const cachedStars = getCachedGitHubStars();
+    ```
+  </Step>
+</Steps>
+
+### Code Style Guidelines
+
+<CardGroup cols={2}>
+  <Card title="No Emojis" icon="ban">
+    Never use emojis in code, comments, or commit messages.
+  </Card>
+  <Card title="Clean Code" icon="broom">
+    Write readable code that minimizes the need for documentation.
+  </Card>
+  <Card title="SOLID Principles" icon="cube">
+    Follow SOLID principles and clean code practices.
+  </Card>
+  <Card title="Single Responsibility" icon="bullseye">
+    Keep functions small and focused on one task.
+  </Card>
+</CardGroup>
+
+### JSDoc for Public APIs
+
+Use JSDoc for exported functions when the signature isn't self-explanatory:
+
+```typescript
+/**
+ * Combines class names using clsx and tailwind-merge.
+ * Ensures Tailwind classes are properly merged without conflicts.
+ * 
+ * @param inputs - Class values to combine
+ * @returns Merged class string
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
+```
+
+## File Naming Conventions
+
+- **Components**: PascalCase for component files - `ProfileHeader.tsx`
+- **Utilities**: kebab-case for utility files - `format-date.ts`
+- **Configuration**: kebab-case - `site-config.ts`
+- **Constants**: SCREAMING_SNAKE_CASE for constants - `const MAX_POSTS = 10;`
+
+## Code Examples
+
+### Utility Function Example
+
+From `src/lib/utils.ts`:
+
+```typescript
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+This follows all standards:
+- Explicit types for parameters
+- Concise implementation
+- No unnecessary comments
+- Proper imports organization
+
+## Pre-commit Checklist
+
+Before committing code:
+
+- [ ] Run `pnpm lint` and fix all issues
+- [ ] Run `pnpm format` to format code
+- [ ] Run `npx tsc --noEmit` to check types
+- [ ] Remove any console.log statements
+- [ ] Ensure no emojis in code or comments
+- [ ] Verify imports are organized correctly
+- [ ] Check that new files follow naming conventions
+
+<Note>
+  Consider setting up [Husky](https://typicode.github.io/husky/) or [lint-staged](https://github.com/lint-staged/lint-staged) to automate these checks as pre-commit hooks.
+</Note>

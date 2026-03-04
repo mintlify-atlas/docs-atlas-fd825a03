@@ -1,0 +1,416 @@
+---
+title: "Portfolio Sections"
+description: "Configure and customize each portfolio section to showcase your experience, projects, skills, and achievements"
+---
+
+Portfolio sections are the building blocks of your profile. Each section displays different types of content like work experience, projects, tech stack, and more.
+
+## Section Structure
+
+All sections follow a common structure:
+
+```typescript
+interface Section<T> {
+  id: string;              // Unique identifier (used in URLs)
+  name: string;            // Display name
+  columns: number;         // Layout columns (1-3)
+  content?: string;        // Optional description
+  visible: boolean;        // Show/hide section
+  separateLinks: boolean;  // Separate item links
+  items: T[];             // Section content
+  icon: string;           // Lucide icon name
+}
+```
+
+## Available Sections
+
+### About Section
+
+Display personal information and interests:
+
+```typescript
+about: {
+  id: "about",
+  name: "About",
+  columns: 2,
+  visible: true,
+  separateLinks: false,
+  icon: "user",
+  items: [
+    {
+      id: "intro",
+      title: "Introduction",
+      icon: "circle-user",
+      content: "I'm a full-stack developer with 7+ years of experience..."
+    },
+    {
+      id: "interests",
+      title: "Interests",
+      icon: "heart",
+      content: "Open source, web performance, developer tooling"
+    }
+  ]
+}
+```
+
+### Experience Section
+
+Showcase your work history:
+
+```typescript
+experiences: {
+  id: "experiences",
+  name: "Experience",
+  columns: 1,
+  visible: true,
+  separateLinks: false,
+  icon: "briefcase",
+  items: [
+    {
+      id: "company-1",
+      companyName: "OfficePuzzle",
+      companyLogo: "/images/companies/officepuzzle.svg",
+      isCurrentEmployer: true,
+      website: "https://officepuzzle.com",
+      positions: [
+        {
+          id: "position-1",
+          title: "Senior Software Engineer",
+          employmentType: "Full-time",
+          location: "Remote",
+          employmentPeriod: {
+            start: "2023-01",
+            end: undefined // Current
+          },
+          description: "Leading development of healthcare platform with Next.js and PostgreSQL...",
+          skills: ["Next.js", "TypeScript", "PostgreSQL", "AWS"],
+          isExpanded: false
+        }
+      ]
+    }
+  ]
+}
+```
+
+<Note>
+  You can have multiple positions per company. Set `isCurrentEmployer: true` for your current role.
+</Note>
+
+### Projects Section
+
+Highlight your portfolio projects:
+
+```typescript
+projects: {
+  id: "projects",
+  name: "Projects",
+  columns: 2,
+  visible: true,
+  separateLinks: true,
+  icon: "folder",
+  items: [
+    {
+      id: "project-1",
+      title: "Portfolio Website",
+      period: {
+        start: "2024-01",
+        end: "2024-03"
+      },
+      link: "https://github.com/username/portfolio",
+      skills: ["Next.js", "Tailwind CSS", "MDX"],
+      description: "A modern portfolio and blog built with Next.js 16...",
+      logo: "/images/projects/portfolio.png",
+      isExpanded: false
+    }
+  ]
+}
+```
+
+### Tech Stack Section
+
+Display your technology expertise:
+
+```typescript
+techStack: {
+  id: "tech-stack",
+  name: "Tech Stack",
+  columns: 3,
+  visible: true,
+  separateLinks: false,
+  icon: "layers",
+  items: [
+    {
+      key: "react",
+      title: "React",
+      href: "https://react.dev",
+      categories: ["Frontend", "Library"],
+      theme: true // Use dark/light variants
+    },
+    {
+      key: "nextjs",
+      title: "Next.js",
+      href: "https://nextjs.org",
+      categories: ["Frontend", "Framework"],
+      theme: true
+    }
+  ]
+}
+```
+
+<Tip>
+  Set `theme: true` to use different icons for light and dark modes. Place icons in `public/tech-stack-icons/` as:
+  - `{key}.svg` (default)
+  - `{key}-dark.svg` (dark mode)
+  - `{key}-light.svg` (light mode)
+</Tip>
+
+### Education Section
+
+List your educational background:
+
+```typescript
+educations: {
+  id: "educations",
+  name: "Education",
+  columns: 1,
+  visible: true,
+  separateLinks: false,
+  icon: "graduation-cap",
+  items: [
+    {
+      id: "university-1",
+      companyName: "University of Technology",
+      companyLogo: "/images/schools/university.png",
+      website: "https://university.edu",
+      positions: [
+        {
+          id: "degree-1",
+          title: "Bachelor of Science in Computer Science",
+          employmentPeriod: {
+            start: "2015-09",
+            end: "2019-06"
+          },
+          location: "City, Country",
+          description: "Graduated with honors. Focus on web development and software engineering."
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Certifications Section
+
+Showcase professional certifications:
+
+```typescript
+certifications: {
+  id: "certifications",
+  name: "Certifications",
+  columns: 2,
+  visible: true,
+  separateLinks: true,
+  icon: "award",
+  items: [
+    {
+      title: "AWS Certified Solutions Architect",
+      issuer: "Amazon Web Services",
+      issuerLogoURL: "/images/certs/aws.png",
+      issueDate: "2024-01",
+      credentialID: "ABC123XYZ",
+      credentialURL: "https://aws.amazon.com/verification/ABC123XYZ"
+    }
+  ]
+}
+```
+
+### Awards Section
+
+Display achievements and awards:
+
+```typescript
+awards: {
+  id: "awards",
+  name: "Awards",
+  columns: 2,
+  visible: true,
+  separateLinks: false,
+  icon: "trophy",
+  items: [
+    {
+      id: "award-1",
+      prize: "First Place",
+      title: "Hackathon 2024",
+      date: "2024-03",
+      grade: "Winner",
+      description: "Built an AI-powered developer tool in 48 hours",
+      referenceLink: "https://hackathon.example.com/winners"
+    }
+  ]
+}
+```
+
+### Social Links Section
+
+Add social media and professional profiles:
+
+```typescript
+socialLinks: {
+  id: "social-links",
+  name: "Connect",
+  columns: 3,
+  visible: true,
+  separateLinks: false,
+  icon: "link",
+  items: [
+    {
+      icon: "/images/social/github.svg",
+      title: "GitHub",
+      description: "@tonysantana1492",
+      href: "https://github.com/tonysantana1492"
+    },
+    {
+      icon: "/images/social/linkedin.svg",
+      title: "LinkedIn",
+      description: "Tony Santana",
+      href: "https://linkedin.com/in/tonysantana1492"
+    }
+  ]
+}
+```
+
+## Section Configuration Options
+
+### Visibility
+
+Control which sections appear on your portfolio:
+
+```typescript
+visible: true  // Show section
+visible: false // Hide section
+```
+
+### Column Layout
+
+Adjust the number of columns (1-3):
+
+```typescript
+columns: 1 // Single column (good for detailed content)
+columns: 2 // Two columns (balanced layout)
+columns: 3 // Three columns (compact, grid-like)
+```
+
+<Note>
+  Mobile devices always display single column layout regardless of this setting.
+</Note>
+
+### Section Icons
+
+Use any [Lucide icon](https://lucide.dev/icons) name:
+
+```typescript
+icon: "briefcase"      // Work experience
+icon: "folder"         // Projects
+icon: "graduation-cap" // Education
+icon: "award"          // Certifications
+icon: "trophy"         // Awards
+icon: "layers"         // Tech stack
+```
+
+## Reordering Sections
+
+The order of sections in your profile object determines their display order:
+
+```typescript
+sections: {
+  about: { /* ... */ },        // Shows first
+  experiences: { /* ... */ },  // Shows second
+  projects: { /* ... */ },     // Shows third
+  techStack: { /* ... */ },    // Shows fourth
+  // ... more sections
+}
+```
+
+Simply reorder the object keys to change section order.
+
+## Best Practices
+
+<Accordion title="Keep content concise">
+  Use brief descriptions. Visitors can expand items for more details if interested.
+</Accordion>
+
+<Accordion title="Use high-quality images">
+  Upload company logos and project screenshots at 2x resolution for retina displays.
+</Accordion>
+
+<Accordion title="Update regularly">
+  Keep your experience, projects, and skills current to reflect your latest work.
+</Accordion>
+
+<Accordion title="Prioritize important sections">
+  Place your strongest sections (usually experience and projects) near the top.
+</Accordion>
+
+<Accordion title="Use consistent date formats">
+  Use YYYY-MM format for dates (e.g., "2024-03") for proper sorting and formatting.
+</Accordion>
+
+## Example: Complete Section
+
+Here's a complete example of a well-configured experience section:
+
+```typescript
+experiences: {
+  id: "experiences",
+  name: "Professional Experience",
+  columns: 1,
+  content: "My journey as a software engineer",
+  visible: true,
+  separateLinks: false,
+  icon: "briefcase",
+  items: [
+    {
+      id: "officepuzzle",
+      companyName: "OfficePuzzle",
+      companyLogo: "/images/companies/officepuzzle.svg",
+      isCurrentEmployer: true,
+      website: "https://officepuzzle.com",
+      positions: [
+        {
+          id: "senior-engineer",
+          title: "Senior Software Engineer",
+          employmentType: "Full-time",
+          location: "Remote",
+          employmentPeriod: {
+            start: "2023-01",
+            end: undefined
+          },
+          description: "Leading development of a HIPAA-compliant healthcare platform serving 10,000+ users. Architected microservices with Next.js, NestJS, and PostgreSQL. Reduced deployment time by 70% through CI/CD optimization.",
+          skills: [
+            "Next.js",
+            "TypeScript",
+            "NestJS",
+            "PostgreSQL",
+            "AWS",
+            "Docker",
+            "CI/CD"
+          ],
+          icon: "code",
+          isExpanded: false
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Profile Data" icon="user" href="/customization/profile-data">
+    Configure your profile information
+  </Card>
+  <Card title="Theme Styling" icon="palette" href="/customization/theme-styling">
+    Customize colors and styling
+  </Card>
+</CardGroup>

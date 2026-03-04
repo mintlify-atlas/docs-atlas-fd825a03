@@ -1,0 +1,387 @@
+---
+title: Project Structure
+description: Understand the directory structure and organization of the Tony Santana Portfolio project.
+---
+
+The Tony Santana Portfolio follows a well-organized Next.js App Router structure with clear separation of concerns. This guide explains the purpose of each directory and key files.
+
+## Root Directory Structure
+
+Here's an overview of the main directories and files:
+
+```
+portfolio/
+├── src/                    # Source code
+├── public/                 # Static assets
+├── package.json           # Project dependencies
+├── next.config.ts         # Next.js configuration
+├── tsconfig.json          # TypeScript configuration
+├── biome.json             # Biome linter/formatter config
+├── components.json        # shadcn/ui configuration
+└── pnpm-lock.yaml        # Lock file for dependencies
+```
+
+## Source Directory (`src/`)
+
+The `src/` directory contains all application code, organized by feature and responsibility.
+
+### App Directory (`src/app/`)
+
+The `app/` directory uses Next.js 16 App Router with route groups:
+
+```
+src/app/
+├── (app)/                 # Main application routes
+│   ├── page.tsx          # Portfolio homepage
+│   ├── blog/             # Blog listing and posts
+│   └── resume/           # Resume pages
+├── (llms)/               # LLM-specific routes
+├── api/                  # API routes
+├── offline/              # PWA offline page
+├── print/                # Print-optimized pages
+├── vcard/                # vCard download route
+├── layout.tsx            # Root layout
+├── manifest.ts           # PWA manifest
+├── robots.ts             # Robots.txt generation
+└── sitemap.ts            # Sitemap generation
+```
+
+<Note>
+  Route groups like `(app)` and `(llms)` organize routes without affecting the URL structure.
+</Note>
+
+### Components Directory (`src/components/`)
+
+Reusable React components organized by category:
+
+```
+src/components/
+├── ui/                    # shadcn/ui base components
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── dialog.tsx
+│   └── ...
+├── header/               # Header components
+│   ├── logo.tsx
+│   ├── nav.tsx
+│   └── theme-toggle.tsx
+├── footer/               # Footer components
+├── shared/               # Shared utility components
+│   ├── icons.tsx
+│   ├── mdx-components.tsx
+│   └── ...
+├── ai/                   # AI-related components
+└── animated-icons/       # Animated icon components
+```
+
+<Tip>
+  The `ui/` directory contains shadcn/ui components that can be customized to match your design system.
+</Tip>
+
+### Content Directory (`src/content/`)
+
+All content data and configurations:
+
+```
+src/content/
+├── profile.ts            # Main profile data and types
+│   # Contains:
+│   # - Personal information
+│   # - Work experience
+│   # - Projects
+│   # - Tech stack
+│   # - Social links
+│   # - Awards & certifications
+├── blog/                 # Blog post MDX files
+│   ├── post-1.mdx
+│   ├── post-2.mdx
+│   └── ...
+├── resume/               # Resume content
+└── github-contributions.ts
+```
+
+**Example from `profile.ts`:**
+
+```typescript src/content/profile.ts
+export interface Section<T = any> {
+  id: string;
+  name: string;
+  columns: number;
+  visible: boolean;
+  items: T[];
+  icon: string;
+}
+
+export type Experience = {
+  id: string;
+  companyName: string;
+  companyLogo?: string;
+  positions: ExperiencePosition[];
+  isCurrentEmployer?: boolean;
+  website?: string;
+};
+```
+
+<Warning>
+  The `profile.ts` file contains personal information (base64 encoded contact details). Update this file with your own information before deploying.
+</Warning>
+
+### Configuration Directory (`src/config/`)
+
+Application configuration files:
+
+```
+src/config/
+├── site.config.ts        # Site metadata, navigation, PWA config
+└── app.config.ts         # App-level settings
+```
+
+**Key exports from `site.config.ts`:**
+
+```typescript src/config/site.config.ts
+export const SITE_INFO = {
+  name: string,
+  url: string,
+  ogImage: string,
+  description: string,
+  keywords: string,
+  icons: ManifestIcons[],
+  screenshots: ManifestScreenshots[]
+};
+
+export const MAIN_NAV: INavItem[] = [
+  { title: "Portfolio", href: "/", icon: Logo },
+  { title: "Resume", href: "/resume/tony-santana", icon: UserStarIcon },
+  { title: "Blog", href: "/blog", icon: RssIcon },
+];
+```
+
+### Library Directory (`src/lib/`)
+
+Utility functions and helpers:
+
+```
+src/lib/
+├── utils.ts              # General utilities (cn, etc.)
+├── fonts.ts              # Font configurations
+├── events.ts             # Analytics event tracking
+├── v-card.ts             # vCard generation
+├── pdf-config.ts         # PDF export configuration
+├── pwa-utils.ts          # PWA utilities
+├── copy.ts               # Clipboard utilities
+├── rehype-*.ts           # MDX processing plugins
+├── remark-*.ts           # Markdown processing plugins
+└── ...
+```
+
+<Card title="Utility Functions" icon="code">
+  The `utils.ts` file includes the commonly used `cn()` function for combining Tailwind classes with class-variance-authority.
+</Card>
+
+### Hooks Directory (`src/hooks/`)
+
+Custom React hooks:
+
+```
+src/hooks/
+├── use-pwa.ts            # PWA installation hook
+└── use-is-client.ts      # Client-side detection hook
+```
+
+### Services Directory (`src/services/`)
+
+Business logic and data fetching:
+
+```
+src/services/
+├── blog.ts               # Blog post operations
+├── resume.ts             # Resume data operations
+├── experience.ts         # Experience data operations
+└── export-by-slug.ts     # Export functionality
+```
+
+**Example from `blog.ts`:**
+
+```typescript src/services/blog.ts
+export async function getBlogPosts(): Promise<Post[]> {
+  // Fetches and processes MDX blog posts
+}
+
+export async function getPostBySlug(slug: string): Promise<Post> {
+  // Retrieves individual blog post
+}
+```
+
+### Other Key Directories
+
+<Steps>
+
+<Step title="Assets Directory (src/assets/)">
+  Static assets like fonts:
+  
+  ```
+  src/assets/
+  └── fonts/              # Custom web fonts
+  ```
+</Step>
+
+<Step title="Providers Directory (src/providers/)">
+  React context providers for global state:
+  
+  ```
+  src/providers/
+  ├── theme-provider.tsx
+  └── ...
+  ```
+</Step>
+
+<Step title="Styles Directory (src/styles/)">
+  Global CSS and Tailwind configurations:
+  
+  ```
+  src/styles/
+  ├── globals.css         # Global styles and Tailwind imports
+  └── ...
+  ```
+</Step>
+
+<Step title="Types Directory (src/types/)">
+  TypeScript type definitions:
+  
+  ```
+  src/types/
+  └── post.ts             # Blog post types
+  ```
+</Step>
+
+<Step title="Theme Directory (src/theme/)">
+  Theme configuration and CSS variables
+</Step>
+
+</Steps>
+
+## Public Directory
+
+Static files served directly:
+
+```
+public/
+├── images/               # Image assets
+│   ├── logo.svg
+│   ├── favicon.ico
+│   ├── icon-*.png        # PWA icons
+│   └── screenshot-*.webp # PWA screenshots
+├── tech-stack-icons/     # Technology icons
+├── robots.txt           # Search engine instructions
+└── ...
+```
+
+<Note>
+  Files in the `public/` directory are served from the root URL. For example, `public/images/logo.svg` is accessible at `/images/logo.svg`.
+</Note>
+
+## Configuration Files
+
+### Next.js Configuration
+
+**`next.config.ts`**: Configures Next.js behavior, including:
+- Image optimization settings
+- Webpack configurations
+- Redirects and rewrites
+- Environment variables
+
+### TypeScript Configuration
+
+**`tsconfig.json`**: TypeScript compiler options with path aliases:
+
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
+```
+
+This allows imports like `import { Button } from "@/components/ui/button"`.
+
+### Package Management
+
+**`package.json`**: Project metadata and scripts:
+
+```json package.json
+{
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check --write",
+    "format": "biome format --write"
+  }
+}
+```
+
+### Component Configuration
+
+**`components.json`**: shadcn/ui configuration:
+
+```json components.json
+{
+  "style": "default",
+  "tailwind": {
+    "config": "tailwind.config.ts",
+    "css": "src/styles/globals.css"
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
+```
+
+## File Naming Conventions
+
+<Card title="Naming Standards" icon="file">
+  - **Components**: PascalCase (e.g., `Button.tsx`, `ThemeToggle.tsx`)
+  - **Utilities**: kebab-case (e.g., `use-pwa.ts`, `v-card.ts`)
+  - **Routes**: kebab-case directories (e.g., `blog/`, `resume/`)
+  - **Config files**: kebab-case with extension (e.g., `site.config.ts`)
+</Card>
+
+## Import Paths
+
+The project uses the `@/` alias for cleaner imports:
+
+```typescript
+// Instead of:
+import { Button } from "../../components/ui/button"
+
+// Use:
+import { Button } from "@/components/ui/button"
+```
+
+## Key Files to Customize
+
+When adapting this template for your own use:
+
+1. **`src/content/profile.ts`** - Your personal and professional information
+2. **`src/config/site.config.ts`** - Site metadata and navigation
+3. **`src/content/blog/*.mdx`** - Your blog posts
+4. **`public/images/`** - Replace with your own images
+5. **`.env.local`** - Your environment variables
+
+<Tip>
+  Start by updating the profile data, then customize the styling and components to match your personal brand.
+</Tip>
+
+## Next Steps
+
+Now that you understand the project structure, you can:
+
+- Customize your portfolio content
+- Add new blog posts
+- Modify components and styling
+- Configure deployment settings
+
+Explore the codebase to discover additional features like the component registry, PWA support, and analytics integration.
