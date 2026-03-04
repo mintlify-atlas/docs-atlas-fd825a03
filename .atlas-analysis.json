@@ -1,0 +1,112 @@
+{
+  "projectType": "frontend",
+  "projectName": "Tony Santana Portfolio",
+  "projectDescription": "A minimal, modern portfolio and blog built with Next.js, featuring customizable sections, MDX blog support, and shadcn/ui components.",
+  "theme": "willow",
+  "primaryColor": "#7c7c7c",
+  "lightColor": "#060606",
+  "darkColor": "#d2d2d2",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "project-structure"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "customization/profile-data",
+              "customization/site-configuration",
+              "customization/theme-styling",
+              "customization/portfolio-sections"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/blog",
+              "features/resume",
+              "features/vcard",
+              "features/github-integration",
+              "features/analytics"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "components/overview",
+              "components/ui-components",
+              "components/animations"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/environment-variables",
+              "deployment/vercel",
+              "deployment/build-configuration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Blog",
+        "groups": [
+          {
+            "group": "Content Management",
+            "pages": [
+              "blog/creating-posts",
+              "blog/mdx-components",
+              "blog/frontmatter",
+              "blog/rss-feed"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Development Guide",
+            "pages": [
+              "development/getting-started",
+              "development/code-standards",
+              "development/folder-structure"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Customizable portfolio sections (experience, projects, tech stack, awards, certifications)",
+    "MDX-powered blog with syntax highlighting and dynamic OG images",
+    "Downloadable vCard for contact information",
+    "Light/dark theme with system preference support",
+    "GitHub contributions integration",
+    "SEO optimized with JSON-LD schema and sitemap",
+    "PWA support with offline functionality",
+    "Responsive design with Tailwind CSS v4",
+    "shadcn/ui component system",
+    "Analytics integration with PostHog"
+  ],
+  "publicApiSurface": [
+    "PROFILE configuration object in src/content/profile.ts",
+    "SITE_INFO configuration in src/config/site.config.ts",
+    "Portfolio sections: about, socialLinks, techStack, experiences, educations, projects, certifications, awards",
+    "Blog MDX files in src/content/blog/",
+    "UI components in src/components/ui/",
+    "Theme configuration via Tailwind CSS",
+    "Resume generation at /resume/[slug]",
+    "vCard endpoint at /vcard",
+    "Blog RSS feed at /blog/rss",
+    "Analytics event tracking via trackEvent() in src/lib/events.ts"
+  ]
+}
